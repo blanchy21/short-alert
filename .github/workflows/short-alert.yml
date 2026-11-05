@@ -39,7 +39,13 @@ jobs:
           me = requests.get(f"{base}/getMe", timeout=15).json()
           if not me.get("ok"):
               sys.exit(f"Bot token rejected: {me.get('description')}")
-          print(f"Bot: @{me['result']['username']}")
+          name = me["result"]["username"]
+          print(f"Bot: @{name[:3]}...{name[-3:]} (id {me['result']['id']})")
+          cid = os.environ["TELEGRAM_CHAT_ID"].strip()
+          print(f"Chat ID secret: {len(cid)} chars, numeric={cid.lstrip('-').isdigit()}")
+          ups = requests.get(f"{base}/getUpdates", timeout=15).json().get("result", [])
+          chats = {(m.get("message") or m.get("my_chat_member") or {}).get("chat", {}).get("id") for m in ups}
+          print(f"Chat IDs that have messaged this bot: {sorted(c for c in chats if c) or 'none - send the bot a message first'}")
           r = requests.post(f"{base}/sendMessage", timeout=15, json={
               "chat_id": os.environ["TELEGRAM_CHAT_ID"],
               "text": f"✅ Short Alert test from GitHub Actions via @{me['result']['username']}"}).json()
