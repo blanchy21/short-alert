@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - run: pip install requests hyperliquid-python-sdk
+      - run: pip install -r requirements.txt
 
       - name: Telegram test
         if: ${{ inputs.test_telegram }}
@@ -73,7 +73,7 @@ jobs:
         env:
           TRADING_MODE: ${{ vars.TRADING_MODE || 'paper' }}
           HL_NETWORK: ${{ vars.HL_NETWORK || 'mainnet' }}
-          HL_ACCOUNT_ADDRESS: ${{ vars.HL_ACCOUNT_ADDRESS }}
+          HL_ACCOUNT_ADDRESS: ${{ vars.HL_ACCOUNT_ADDRESS || secrets.HL_ACCOUNT_ADDRESS }}
           HL_API_PRIVATE_KEY: ${{ secrets.HL_API_PRIVATE_KEY }}
 
       - name: Scan and alert
@@ -84,7 +84,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TRADING_MODE: ${{ vars.TRADING_MODE || 'paper' }}       # paper | live
           HL_NETWORK: ${{ vars.HL_NETWORK || 'mainnet' }}         # mainnet | testnet
-          HL_ACCOUNT_ADDRESS: ${{ vars.HL_ACCOUNT_ADDRESS }}
+          HL_ACCOUNT_ADDRESS: ${{ vars.HL_ACCOUNT_ADDRESS || secrets.HL_ACCOUNT_ADDRESS }}
           HL_API_PRIVATE_KEY: ${{ secrets.HL_API_PRIVATE_KEY }}
 
       - name: Save trade state
