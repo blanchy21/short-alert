@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "7 * * * *"   # every hour at :07 (UTC)
   workflow_dispatch:       # "Run workflow" button for manual tests
+    inputs:
+      test_telegram:
+        description: "Only send a Telegram test message (no scan)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -25,13 +30,36 @@ jobs:
 
       - run: pip install requests
 
+      - name: Telegram test
+        if: ${{ inputs.test_telegram }}
+        run: |
+          python - <<'EOF'
+          import os, sys, requests
+          base = f"https://api.telegram.org/bot{os.environ['TELEGRAM_BOT_TOKEN']}"
+          me = requests.get(f"{base}/getMe", timeout=15).json()
+          if not me.get("ok"):
+              sys.exit(f"Bot token rejected: {me.get('description')}")
+          print(f"Bot: @{me['result']['username']}")
+          r = requests.post(f"{base}/sendMessage", timeout=15, json={
+              "chat_id": os.environ["TELEGRAM_CHAT_ID"],
+              "text": f"✅ Short Alert test from GitHub Actions via @{me['result']['username']}"}).json()
+          if not r.get("ok"):
+              sys.exit(f"Send failed: {r.get('description')}")
+          print("Test message sent")
+          EOF
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
       - name: Scan and alert
+        if: ${{ !inputs.test_telegram }}
         run: python short_alert.py
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
       - name: Save paper-trade state
+        if: ${{ !inputs.test_telegram }}
         run: |
           git config user.name "short-alert-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
