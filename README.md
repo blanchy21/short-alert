@@ -1,6 +1,6 @@
 # Short Alert
 
-Hourly moon-dump short alerts for Hyperliquid, sent to Telegram. Paper mode only — it never places orders.
+Hourly moon-dump short alerts for Hyperliquid, sent to Telegram. Paper mode by default; live mode places real shorts with exchange-side stops (see "Paper / live switch").
 
 - `moon_dump_monitor.py` — your scanner, unchanged. Its scoring is what decides the score.
 - `short_alert.py` — runs the scan and adds the Short Seller rules:
@@ -35,6 +35,35 @@ After that it runs every hour by itself. An hourly run uses roughly 720 of the 2
 
 ### 3. Turn off the Grokbot hourly runs
 Once Telegram alerts are coming through, stop Short Seller's hourly paper runs on Grokbot so you're not paying for both.
+
+## Paper / live switch
+
+Repo → **Settings → Secrets and variables → Actions → Variables** tab:
+
+| Variable | Values | Default |
+|---|---|---|
+| `TRADING_MODE` | `paper` or `live` | `paper` |
+| `HL_NETWORK` | `testnet` or `mainnet` | `mainnet` |
+| `HL_ACCOUNT_ADDRESS` | your main Hyperliquid wallet address (0x…) | — |
+
+And one **secret**: `HL_API_PRIVATE_KEY` — the private key of a Hyperliquid **API wallet**
+(app.hyperliquid.xyz → More → API → Generate). An API wallet can trade but cannot withdraw.
+
+In live mode each alert:
+1. opens a market short sized so the stop loses ~$1.16 (`RISK_PER_TRADE_USD`), isolated 3×
+2. places a reduce-only **stop-loss** and **TP1** on the exchange straight away
+   (if either is rejected, the position is closed immediately)
+3. closes the position after 24h if neither has hit; real P&L (after fees) goes into the tally
+
+Trades under Hyperliquid's $10 minimum, or on a coin you already hold, are skipped and paper-logged.
+The −$11.60 day-stop counts real P&L. Setting `TRADING_MODE` back to `paper` stops new live trades;
+live trades already open keep being managed until they close.
+
+**Check the setup:** Actions → short-alert → Run workflow → tick the test box. It sends a Telegram
+test and shows the Hyperliquid account value it can see. Places no orders.
+
+**Go live in two steps:** first `HL_NETWORK=testnet` (use a testnet API wallet and testnet funds
+from app.hyperliquid-testnet.xyz) with `TRADING_MODE=live`, watch a trade or two, then switch to `mainnet`.
 
 ## Changing the rules
 All thresholds are at the top of `short_alert.py` (`MIN_SCORE`, `MAX_STOP_PCT`, `BTC_EMA_PERIOD`, etc.).

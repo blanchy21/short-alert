@@ -6,7 +6,7 @@ on:
   workflow_dispatch:       # "Run workflow" button for manual tests
     inputs:
       test_telegram:
-        description: "Only send a Telegram test message (no scan)"
+        description: "Only send a Telegram test message and check Hyperliquid connection (no scan, no orders)"
         type: boolean
         default: false
 
@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - run: pip install requests
+      - run: pip install requests hyperliquid-python-sdk
 
       - name: Telegram test
         if: ${{ inputs.test_telegram }}
@@ -57,15 +57,38 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
+      - name: Hyperliquid connection test
+        if: ${{ inputs.test_telegram }}
+        run: |
+          python - <<'EOF'
+          import os
+          print(f"TRADING_MODE: {os.environ.get('TRADING_MODE')} | HL_NETWORK: {os.environ.get('HL_NETWORK')}")
+          if not os.environ.get("HL_API_PRIVATE_KEY"):
+              print("No Hyperliquid API key set - paper mode only")
+              raise SystemExit
+          from hl_trader import Trader
+          t = Trader()
+          print(f"Connected to {t.network}: account value ${t.account_value():.2f}")
+          EOF
+        env:
+          TRADING_MODE: ${{ vars.TRADING_MODE || 'paper' }}
+          HL_NETWORK: ${{ vars.HL_NETWORK || 'mainnet' }}
+          HL_ACCOUNT_ADDRESS: ${{ vars.HL_ACCOUNT_ADDRESS }}
+          HL_API_PRIVATE_KEY: ${{ secrets.HL_API_PRIVATE_KEY }}
+
       - name: Scan and alert
         if: ${{ !inputs.test_telegram }}
         run: python short_alert.py
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TRADING_MODE: ${{ vars.TRADING_MODE || 'paper' }}       # paper | live
+          HL_NETWORK: ${{ vars.HL_NETWORK || 'mainnet' }}         # mainnet | testnet
+          HL_ACCOUNT_ADDRESS: ${{ vars.HL_ACCOUNT_ADDRESS }}
+          HL_API_PRIVATE_KEY: ${{ secrets.HL_API_PRIVATE_KEY }}
 
-      - name: Save paper-trade state
-        if: ${{ !inputs.test_telegram }}
+      - name: Save trade state
+        if: ${{ always() && !inputs.test_telegram }}
         run: |
           git config user.name "short-alert-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

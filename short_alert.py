@@ -9,8 +9,12 @@ Uses moon_dump_monitor.py's scoring unchanged, plus the Short Seller rules:
   - stop = 1.5x ATR above entry, capped at 10%
   - one alert per coin per day, max hold 24h, paper day-stop at -$11.60
 
-Sends Telegram alerts and keeps a paper-trade log in state/state.json.
-Places NO orders.
+Sends Telegram alerts and keeps a trade log in state/state.json.
+
+TRADING_MODE=paper (default): places NO orders, paper-trades only.
+TRADING_MODE=live: places a real short on Hyperliquid with an exchange-side
+stop-loss and TP1 (see hl_trader.py). Switching back to paper stops new live
+trades; any live trades already open keep being managed until they close.
 """
 
 import json
@@ -46,6 +50,9 @@ DAILY_LOSS_LIMIT_USD = 11.60
 BTC_EMA_PERIOD = 21           # on 4h candles
 TALLY_HOUR_LOCAL = 21         # 21:00 Dublin
 TZ = ZoneInfo("Europe/Dublin")
+
+TRADING_MODE = os.environ.get("TRADING_MODE", "paper").strip().lower()
+LIVE = TRADING_MODE == "live"
 
 STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "state", "state.json")
 HOUR_MS = 3_600_000
@@ -139,12 +146,71 @@ def trade_levels(candles: list) -> dict:
     }
 
 
-# ---------------------------------------------------------------- paper trades
-def update_open_trades(state: dict, marks: dict) -> list:
-    """Close paper trades on stop / TP1 / 24h. Returns closing messages."""
+# ---------------------------------------------------------------- live trader
+def get_trader():
+    """Return a hl_trader.Trader, or (None, error text)."""
+    try:
+        from hl_trader import Trader
+        return Trader(), None
+    except Exception as e:  # missing keys, SDK, network...
+        return None, str(e)
+
+
+def close_live_trade(t: dict, trader, marks: dict, now_ms: int):
+    """Returns (exit_px, reason, pnl_usd) if the live trade is closed, else None."""
+    coin = t["coin"]
+    if trader.position(coin) != 0:
+        if now_ms - t["entry_ms"] < MAX_HOLD_HOURS * HOUR_MS:
+            return None
+        trader.close(coin)
+        trader.wait_flat(coin)
+        reason = "24h TIME EXIT"
+    else:
+        trader.cancel_all(coin)  # leftover stop/TP order
+        reason = None
+    fills = trader.closing_fills(coin, t["entry_ms"])
+    if fills is None:
+        return marks.get(coin, t["entry"]), reason or "CLOSED (no fills found)", 0.0
+    if reason is None:
+        if fills["exit"] >= t["stop"] * 0.995:
+            reason = "STOP"
+        elif fills["exit"] <= t["tp1"] * 1.005:
+            reason = "TP1"
+        else:
+            reason = "CLOSED"
+    return fills["exit"], reason, fills["pnl_usd"]
+
+
+# ---------------------------------------------------------------- open trades
+def update_open_trades(state: dict, marks: dict, trader) -> list:
+    """Close trades on stop / TP1 / 24h. Returns closing messages."""
     msgs, still_open = [], []
     now_ms = int(time.time() * 1000)
     for t in state["open"]:
+        if t.get("live"):
+            if trader is None:
+                still_open.append(t)
+                msgs.append(f"⚠️ Can't check LIVE {t['coin']} trade - Hyperliquid connection failed")
+                continue
+            try:
+                res = close_live_trade(t, trader, marks, now_ms)
+            except Exception as e:
+                still_open.append(t)
+                msgs.append(f"⚠️ Error managing LIVE {t['coin']} trade: {e}")
+                continue
+            if res is None:
+                still_open.append(t)
+                continue
+            exit_px, reason, pnl = res
+            r_mult = pnl / RISK_PER_TRADE_USD
+            t.update({"exit": exit_px, "exit_reason": reason, "r": round(r_mult, 2),
+                      "pnl_usd": round(pnl, 2), "exit_time": now_utc().isoformat()})
+            state["closed"].append(t)
+            state["paper_pnl_today"] = round(state["paper_pnl_today"] + pnl, 2)
+            icon = "✅" if pnl > 0 else "❌"
+            msgs.append(f"{icon} LIVE CLOSE {t['coin']} — {reason}\n"
+                        f"Entry {fmt(t['entry'])} → exit {fmt(exit_px)} | {r_mult:+.2f}R ({pnl:+.2f} USD after fees)")
+            continue
         candles = fetch_candles(t["coin"], "1h", MAX_HOLD_HOURS + 2)
         time.sleep(0.08)
         exit_px, reason = None, None
@@ -187,9 +253,10 @@ def tally_message(state: dict) -> str:
     closed_today = [t for t in state["closed"]
                     if datetime.fromisoformat(t["exit_time"]).astimezone(TZ).strftime("%Y-%m-%d") == today]
     wins = sum(1 for t in closed_today if t["pnl_usd"] > 0)
-    lines = [f"📊 SHORT ALERT — daily tally {today}",
+    live_n = sum(1 for t in closed_today if t.get("live"))
+    lines = [f"📊 SHORT ALERT — daily tally {today} | mode: {TRADING_MODE.upper()}",
              f"Alerts today: {len(state['alerted_today'])} {', '.join(state['alerted_today'])}".rstrip(),
-             f"Paper trades closed: {len(closed_today)} ({wins} won) | P&L {state['paper_pnl_today']:+.2f} USD",
+             f"Trades closed: {len(closed_today)} ({live_n} live, {wins} won) | P&L {state['paper_pnl_today']:+.2f} USD",
              f"Still open: {len(state['open'])} {', '.join(t['coin'] for t in state['open'])}".rstrip()]
     if state["near_misses_today"]:
         nm = "; ".join(f"{c} ({why})" for c, why in list(state["near_misses_today"].items())[:8])
@@ -230,8 +297,19 @@ def main() -> None:
         if vol >= MIN_VOLUME_USD and prev > 0 and (mark - prev) / prev * 100 >= MIN_PUMP_PCT - 2:
             candidates.append({"coin": coin, "funding": funding})
 
-    # 1. Manage open paper trades
-    for m in update_open_trades(state, marks):
+    # 0. Hyperliquid connection (live mode, or live trades still open)
+    trader, trader_err = None, None
+    if LIVE or any(t.get("live") for t in state["open"]):
+        trader, trader_err = get_trader()
+        if trader_err:
+            print(f"Hyperliquid connection failed: {trader_err}")
+            if LIVE:
+                send_telegram(f"⚠️ LIVE mode but Hyperliquid connection failed: {trader_err}\n"
+                              f"New setups will be paper-traded until fixed.")
+    print(f"Mode: {TRADING_MODE}" + (f" ({trader.network})" if trader else ""))
+
+    # 1. Manage open trades
+    for m in update_open_trades(state, marks, trader):
         send_telegram(m)
 
     # 2. Market filter
@@ -278,6 +356,22 @@ def main() -> None:
         lv = trade_levels(candles)
         if lv["tp1"] >= lv["entry"]:
             continue
+
+        live = None
+        if LIVE and trader:
+            try:
+                live = trader.open_short(coin, lv["risk_pct"], -lv["tp1_pct"], RISK_PER_TRADE_USD)
+                lv.update(entry=live["entry"], stop=live["stop"], tp1=live["tp1"])
+                lv["risk_pct"] = (lv["stop"] - lv["entry"]) / lv["entry"] * 100
+                lv["tp1_pct"] = (lv["tp1"] - lv["entry"]) / lv["entry"] * 100
+            except Exception as e:
+                send_telegram(f"⚠️ LIVE order for {coin} not placed: {e}\nLogged as a paper trade instead.")
+        if live:
+            footer = (f"💰 LIVE SHORT OPEN on Hyperliquid{' TESTNET' if live['network'] == 'testnet' else ''}: "
+                      f"{live['size']} {coin} (${live['notional']}) — stop & TP1 orders placed")
+        else:
+            footer = "(Paper trade logged — no order placed)"
+
         grade = "A+" if score >= 70 else "A"
         sigs = "\n".join(f"• {s}" for s in sd["signals"][:6])
         res = f"\n(Old resistance stop: {fmt(lv['res_stop'])})" if lv["res_stop"] else ""
@@ -290,14 +384,18 @@ def main() -> None:
             f"Exit within {sd['exit_window']} — bounce risk {sd['bounce_risk']}\n"
             f"Funding {cand['funding']*100:.4f}% | {btc['note']}\n"
             f"{sigs}{res}\n"
-            f"(Paper trade logged — no order placed)"
+            f"{footer}"
         )
         state["alerted_today"].append(coin)
-        state["open"].append({
+        trade = {
             "coin": coin, "score": score, "entry": lv["entry"], "stop": lv["stop"],
             "tp1": lv["tp1"], "entry_ms": int(time.time() * 1000),
             "entry_time": now_utc().isoformat(), "change_24h": round(chg, 2),
-        })
+        }
+        if live:
+            trade.update(live=True, size=live["size"], network=live["network"])
+        state["open"].append(trade)
+        save_state(state)  # record a live position straight away
 
     # 4. Daily tally at 21:00 Dublin (or first run after, if a run was delayed)
     if local_now.hour >= TALLY_HOUR_LOCAL and state.get("last_tally_date") != today:
