@@ -8,7 +8,8 @@ Hourly moon-dump short alerts for Hyperliquid, sent to Telegram. Paper mode by d
   - rolled over = peak at least 1h ago and price at least 1% below it
   - no new shorts while BTC is above a rising 4h EMA21
   - stop 1.5× ATR (max 10%), TP1 at nearest strong support (else 2× ATR)
-  - one alert per coin per day, 24h max hold, paper day-stop at −$11.60
+  - one alert per coin per day, 24h max hold, TP1 no further than −20%
+  - sizing and caps matched to Grokbot's Short Seller (see below)
 - `state/state.json` — the paper-trade log (open, closed, near-misses). Committed back after each run.
 - Daily tally to Telegram at 21:00 Dublin.
 
@@ -49,14 +50,24 @@ Repo → **Settings → Secrets and variables → Actions → Variables** tab:
 And one **secret**: `HL_API_PRIVATE_KEY` — the private key of a Hyperliquid **API wallet**
 (app.hyperliquid.xyz → More → API → Generate). An API wallet can trade but cannot withdraw.
 
+### Sizing and caps (same as Grokbot's Short Seller)
+The **pot** is the live account value, with unrealised gains ignored and losses counted
+(paper mode starts from `PAPER_START_POT` = $58), so trades grow only as the account grows.
+- risk up to **10% of the pot** per trade (the loss if the stop hits)
+- each short uses at most **25% of the pot as margin** — in practice this limits most trades to less than 10% risk
+- up to **5× isolated**, stepped down so liquidation sits at least 1.5× the stop distance away
+- at most **3 open shorts** (positions opened elsewhere on the account count too)
+- all open shorts at their stops + today's realised losses ≤ **20% of the day-start pot**; trades are shrunk or skipped to fit
+- **daily stop** at a 20% loss of the day-start pot — nothing new until the next Dublin day
+- BTC and ETH excluded; funding below −0.01%/h skipped
+
 In live mode each alert:
-1. opens a market short sized so the stop loses ~$1.16 (`RISK_PER_TRADE_USD`), isolated 3×
+1. opens a market short at that size
 2. places a reduce-only **stop-loss** and **TP1** on the exchange straight away
    (if either is rejected, the position is closed immediately)
 3. closes the position after 24h if neither has hit; real P&L (after fees) goes into the tally
 
-Trades under Hyperliquid's $10 minimum, or on a coin you already hold, are skipped and paper-logged.
-The −$11.60 day-stop counts real P&L. Setting `TRADING_MODE` back to `paper` stops new live trades;
+Trades under Hyperliquid's $10 minimum, or on a coin already held, are skipped. Setting `TRADING_MODE` back to `paper` stops new live trades;
 live trades already open keep being managed until they close.
 
 **Check the setup:** Actions → short-alert → Run workflow → tick the test box. It sends a Telegram

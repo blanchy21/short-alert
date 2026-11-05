@@ -6,8 +6,11 @@ Uses moon_dump_monitor.py's scoring unchanged, plus the Short Seller rules:
   - score 55+ and NOT in the Day 2 bounce zone (peak > 24h ago)
   - "rolled over": peak at least 1h ago AND price at least 1% below the peak
   - BTC filter: no new shorts while BTC is above a rising 4h EMA21
-  - stop = 1.5x ATR above entry, capped at 10%
-  - one alert per coin per day, max hold 24h, paper day-stop at -$11.60
+  - stop = 1.5x ATR above entry, capped at 10%; TP1 no further than -20%
+  - one alert per coin per day, max hold 24h
+  - Grokbot sizing: risk up to 10% of the pot, margin <= 25% of the pot, <= 5x isolated,
+    max 3 open shorts, total open risk + today's losses <= 20% of the day-start pot,
+    daily stop at -20% of the day-start pot, BTC/ETH excluded
 
 Sends Telegram alerts and keeps a trade log in state/state.json.
 
@@ -45,8 +48,19 @@ MAX_DROP_FROM_PEAK = -1.0     # price must be at least 1% below the peak
 STOP_ATR_MULT = 1.5
 MAX_STOP_PCT = 10.0
 MAX_HOLD_HOURS = 24
-RISK_PER_TRADE_USD = 1.16     # ~2% of the EUR50 (~$58) pot
-DAILY_LOSS_LIMIT_USD = 11.60
+# Sizing and caps - matched to Grokbot's Short Seller
+RISK_PCT_OF_POT = 10.0        # risk up to 10% of the pot per trade (loss if the stop hits)
+MAX_MARGIN_PCT_OF_POT = 25.0  # each short uses at most a quarter of the pot as margin
+MAX_LEVERAGE = 5              # isolated, stepped down so liquidation sits well beyond the stop
+LIQ_BUFFER_MULT = 1.5         # liquidation at least 1.5x the stop distance away
+MAX_OPEN_SHORTS = 3
+MAX_TOTAL_RISK_PCT = 20.0     # open shorts at their stops + today's losses <= 20% of day-start pot
+DAILY_LOSS_PCT = 20.0         # daily stop: 20% of the day-start pot
+MAX_TP_PCT = 20.0             # take profit no further than 20% below entry
+EXCLUDED_COINS = {"BTC", "ETH"}
+MIN_FUNDING = -0.0001         # hourly rate; skip if more negative (shorts paying heavily)
+PAPER_START_POT = 58.0        # paper mode's starting pot (USD)
+LEGACY_RISK_USD = 1.16        # risk of trades logged before sizing changed
 BTC_EMA_PERIOD = 21           # on 4h candles
 TALLY_HOUR_LOCAL = 21         # 21:00 Dublin
 TZ = ZoneInfo("Europe/Dublin")
@@ -107,6 +121,35 @@ def roll_day(state: dict, today: str) -> None:
         state["alerted_today"] = []
         state["near_misses_today"] = {}
         state["paper_pnl_today"] = 0.0
+        state["day_start_pot"] = None
+
+
+# ---------------------------------------------------------------- sizing
+def pick_leverage(stop_pct: float, coin_max_lev: int) -> int:
+    """Highest leverage <= MAX_LEVERAGE whose liquidation is LIQ_BUFFER_MULT x beyond the stop."""
+    coin_max_lev = max(1, int(coin_max_lev or MAX_LEVERAGE))
+    mm = 1 / (2 * coin_max_lev)  # Hyperliquid maintenance margin ~ half the initial margin at max leverage
+    for lev in range(min(MAX_LEVERAGE, coin_max_lev), 0, -1):
+        if (1 / lev - mm) * 100 >= LIQ_BUFFER_MULT * stop_pct:
+            return lev
+    return 1
+
+
+def size_trade(pot: float, day_start_pot: float, open_risk: float, loss_today: float,
+               stop_pct: float, lev: int) -> dict:
+    """Returns {notional, risk_usd, lev} or {'block': reason}."""
+    room = MAX_TOTAL_RISK_PCT / 100 * day_start_pot - open_risk - loss_today
+    risk = min(RISK_PCT_OF_POT / 100 * pot, room)
+    if risk <= 0:
+        return {"block": f"risk cap full (open ${open_risk:.2f} + losses ${loss_today:.2f})"}
+    notional = min(risk / (stop_pct / 100), MAX_MARGIN_PCT_OF_POT / 100 * pot * lev)
+    if notional < 10:
+        return {"block": f"size ${notional:.2f} under $10 minimum"}
+    return {"notional": round(notional, 2), "risk_usd": round(notional * stop_pct / 100, 2), "lev": lev}
+
+
+def trade_risk(t: dict) -> float:
+    return t.get("risk_usd", LEGACY_RISK_USD)
 
 
 # ---------------------------------------------------------------- BTC filter
@@ -137,6 +180,8 @@ def trade_levels(candles: list) -> dict:
         tp1, tp1_src = strong[0]["price"], strong[0]["type"]
     else:
         tp1, tp1_src = (entry - 2 * atr if atr else entry * 0.97), "2x ATR"
+    if tp1 < entry * (1 - MAX_TP_PCT / 100):
+        tp1, tp1_src = entry * (1 - MAX_TP_PCT / 100), f"-{MAX_TP_PCT:.0f}% cap"
     resist = sr.get("resistances", [])
     return {
         "entry": entry, "stop": stop, "tp1": tp1, "tp1_src": tp1_src,
@@ -202,7 +247,7 @@ def update_open_trades(state: dict, marks: dict, trader) -> list:
                 still_open.append(t)
                 continue
             exit_px, reason, pnl = res
-            r_mult = pnl / RISK_PER_TRADE_USD
+            r_mult = pnl / trade_risk(t)
             t.update({"exit": exit_px, "exit_reason": reason, "r": round(r_mult, 2),
                       "pnl_usd": round(pnl, 2), "exit_time": now_utc().isoformat()})
             state["closed"].append(t)
@@ -235,7 +280,7 @@ def update_open_trades(state: dict, marks: dict, trader) -> list:
             still_open.append(t)
             continue
         r_mult = (t["entry"] - exit_px) / (t["stop"] - t["entry"])
-        pnl = r_mult * RISK_PER_TRADE_USD
+        pnl = r_mult * trade_risk(t)
         t.update({"exit": exit_px, "exit_reason": reason, "r": round(r_mult, 2),
                   "pnl_usd": round(pnl, 2), "exit_time": now_utc().isoformat()})
         state["closed"].append(t)
@@ -257,6 +302,7 @@ def tally_message(state: dict) -> str:
     lines = [f"📊 SHORT ALERT — daily tally {today} | mode: {TRADING_MODE.upper()}",
              f"Alerts today: {len(state['alerted_today'])} {', '.join(state['alerted_today'])}".rstrip(),
              f"Trades closed: {len(closed_today)} ({live_n} live, {wins} won) | P&L {state['paper_pnl_today']:+.2f} USD",
+             f"Pot at day start: ${state.get('day_start_pot') or 0:.2f}",
              f"Still open: {len(state['open'])} {', '.join(t['coin'] for t in state['open'])}".rstrip()]
     if state["near_misses_today"]:
         nm = "; ".join(f"{c} ({why})" for c, why in list(state["near_misses_today"].items())[:8])
@@ -278,7 +324,7 @@ def main() -> None:
     roll_day(state, today)
 
     universe, ctxs = fetch_meta_and_contexts()
-    marks, candidates = {}, []
+    marks, candidates, max_lev = {}, [], {}
     for meta, ctx in zip(universe, ctxs):
         if meta.get("isDelisted"):
             continue
@@ -293,6 +339,9 @@ def main() -> None:
         if mark <= 0:
             continue
         marks[coin] = mark
+        max_lev[coin] = meta.get("maxLeverage", MAX_LEVERAGE)
+        if coin in EXCLUDED_COINS:
+            continue
         # Cheap pre-filter on the exchange's 24h change; exact check on candles below
         if vol >= MIN_VOLUME_USD and prev > 0 and (mark - prev) / prev * 100 >= MIN_PUMP_PCT - 2:
             candidates.append({"coin": coin, "funding": funding})
@@ -312,11 +361,32 @@ def main() -> None:
     for m in update_open_trades(state, marks, trader):
         send_telegram(m)
 
-    # 2. Market filter
+    # 2. Pot, caps and market filter
+    pot = None
+    if LIVE and trader:
+        try:
+            pot = trader.pot()
+        except Exception as e:
+            send_telegram(f"⚠️ Couldn't read Hyperliquid account value: {e}\nNew setups will be paper-traded.")
+            trader = None
+    if pot is None:
+        pot = PAPER_START_POT + sum(t["pnl_usd"] for t in state["closed"] if not t.get("live"))
+    if not state.get("day_start_pot"):
+        state["day_start_pot"] = round(pot, 2)
+    day_start_pot = state["day_start_pot"]
+    loss_today = max(0.0, -state["paper_pnl_today"])
+    day_stopped = loss_today >= DAILY_LOSS_PCT / 100 * day_start_pot
+    open_coins = {t["coin"] for t in state["open"]}
+    if LIVE and trader:
+        try:
+            open_coins |= trader.open_coins()  # includes positions opened elsewhere (e.g. by hand)
+        except Exception as e:
+            print(f"Couldn't read exchange positions: {e}")
+    print(f"Pot ${pot:.2f} (day start ${day_start_pot:.2f}) | open shorts {len(open_coins)} | "
+          f"today {state['paper_pnl_today']:+.2f}")
+
     btc = btc_filter()
     print(btc["note"])
-    day_stopped = state["paper_pnl_today"] <= -DAILY_LOSS_LIMIT_USD
-    open_coins = {t["coin"] for t in state["open"]}
 
     # 3. Score mooners
     for cand in candidates:
@@ -342,14 +412,18 @@ def main() -> None:
         elif btc["blocks"]:
             block = "BTC uptrend"
         elif coin in state["alerted_today"] or coin in open_coins:
-            block = "already alerted today"
+            block = "already alerted/open today"
+        elif cand["funding"] < MIN_FUNDING:
+            block = f"funding {cand['funding']*100:.4f}%/h too negative"
         elif day_stopped:
-            block = "paper day-stop hit"
+            block = "day-stop hit"
+        elif len(open_coins) >= MAX_OPEN_SHORTS:
+            block = f"{MAX_OPEN_SHORTS} shorts already open"
 
         print(f"{coin:<8} {chg:+6.1f}% score {score:>3} {sd['bounce_risk']:<8} -> {block or 'ALERT'}")
 
         if block:
-            if score >= NEAR_MISS_SCORE and block not in ("already alerted today",):
+            if score >= NEAR_MISS_SCORE and block != "already alerted/open today":
                 state["near_misses_today"].setdefault(coin, f"{score}, {block}")
             continue
 
@@ -357,18 +431,30 @@ def main() -> None:
         if lv["tp1"] >= lv["entry"]:
             continue
 
+        open_risk = sum(trade_risk(t) for t in state["open"])
+        sz = size_trade(pot, day_start_pot, open_risk, loss_today, lv["risk_pct"],
+                        pick_leverage(lv["risk_pct"], max_lev.get(coin)))
+        if "block" in sz:
+            print(f"         -> skipped: {sz['block']}")
+            state["near_misses_today"].setdefault(coin, f"{score}, {sz['block']}")
+            continue
+
         live = None
         if LIVE and trader:
             try:
-                live = trader.open_short(coin, lv["risk_pct"], -lv["tp1_pct"], RISK_PER_TRADE_USD)
+                live = trader.open_short(coin, sz["notional"], sz["lev"], lv["risk_pct"], -lv["tp1_pct"])
                 lv.update(entry=live["entry"], stop=live["stop"], tp1=live["tp1"])
                 lv["risk_pct"] = (lv["stop"] - lv["entry"]) / lv["entry"] * 100
                 lv["tp1_pct"] = (lv["tp1"] - lv["entry"]) / lv["entry"] * 100
+                sz.update(notional=live["notional"], risk_usd=live["risk_usd"])
             except Exception as e:
                 send_telegram(f"⚠️ LIVE order for {coin} not placed: {e}\nLogged as a paper trade instead.")
+        size_line = (f"Size ${sz['notional']:.2f} at {sz['lev']}x isolated "
+                     f"(margin ${sz['notional'] / sz['lev']:.2f}) | risk ${sz['risk_usd']:.2f} "
+                     f"= {sz['risk_usd'] / pot * 100:.1f}% of ${pot:.2f} pot")
         if live:
             footer = (f"💰 LIVE SHORT OPEN on Hyperliquid{' TESTNET' if live['network'] == 'testnet' else ''}: "
-                      f"{live['size']} {coin} (${live['notional']}) — stop & TP1 orders placed")
+                      f"{live['size']} {coin} — stop & TP1 orders placed")
         else:
             footer = "(Paper trade logged — no order placed)"
 
@@ -384,6 +470,7 @@ def main() -> None:
             f"Exit within {sd['exit_window']} — bounce risk {sd['bounce_risk']}\n"
             f"Funding {cand['funding']*100:.4f}% | {btc['note']}\n"
             f"{sigs}{res}\n"
+            f"{size_line}\n"
             f"{footer}"
         )
         state["alerted_today"].append(coin)
@@ -391,10 +478,12 @@ def main() -> None:
             "coin": coin, "score": score, "entry": lv["entry"], "stop": lv["stop"],
             "tp1": lv["tp1"], "entry_ms": int(time.time() * 1000),
             "entry_time": now_utc().isoformat(), "change_24h": round(chg, 2),
+            "risk_usd": sz["risk_usd"], "notional": sz["notional"], "leverage": sz["lev"],
         }
         if live:
             trade.update(live=True, size=live["size"], network=live["network"])
         state["open"].append(trade)
+        open_coins.add(coin)
         save_state(state)  # record a live position straight away
 
     # 4. Daily tally at 21:00 Dublin (or first run after, if a run was delayed)

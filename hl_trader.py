@@ -21,7 +21,6 @@ from hyperliquid.utils import constants
 
 MIN_NOTIONAL_USD = 10.0      # Hyperliquid's minimum order value
 ENTRY_SLIPPAGE = 0.01        # max 1% worse than mid on the market entry
-LEVERAGE = 3                 # isolated; margin = notional / 3
 
 
 class TraderError(Exception):
@@ -61,6 +60,16 @@ class Trader:
     def account_value(self) -> float:
         return float(self.info.user_state(self.address)["marginSummary"]["accountValue"])
 
+    def pot(self) -> float:
+        """Account value with unrealised gains ignored and unrealised losses counted."""
+        us = self.info.user_state(self.address)
+        upnl = sum(float(p["position"].get("unrealizedPnl") or 0) for p in us["assetPositions"])
+        return float(us["marginSummary"]["accountValue"]) - max(0.0, upnl)
+
+    def open_coins(self) -> set:
+        return {p["position"]["coin"] for p in self.info.user_state(self.address)["assetPositions"]
+                if float(p["position"]["szi"]) != 0}
+
     def position(self, coin: str) -> float:
         """Signed size (negative = short); 0 if flat."""
         for p in self.info.user_state(self.address)["assetPositions"]:
@@ -77,24 +86,24 @@ class Trader:
                 self.exchange.cancel(coin, o["oid"])
 
     # ------------------------------------------------------------ trading
-    def open_short(self, coin: str, stop_pct: float, tp_pct: float, risk_usd: float) -> dict:
+    def open_short(self, coin: str, notional_usd: float, leverage: int, stop_pct: float, tp_pct: float) -> dict:
         """
-        stop_pct: stop distance above entry in % (positive)
-        tp_pct:   take-profit distance below entry in % (positive)
-        Sizes the position so hitting the stop loses ~risk_usd.
+        notional_usd: position value to open (sized by short_alert.size_trade)
+        leverage:     isolated leverage (margin = notional / leverage)
+        stop_pct:     stop distance above entry in % (positive)
+        tp_pct:       take-profit distance below entry in % (positive)
         """
         if self.position(coin) != 0:
             raise TraderError(f"already have a {coin} position on the exchange")
 
         mid = self.mid(coin)
-        sz = self.round_sz(coin, risk_usd / (mid * stop_pct / 100))
+        sz = self.round_sz(coin, notional_usd / mid)
         if sz * mid < MIN_NOTIONAL_USD:
-            raise TraderError(f"position ${sz * mid:.2f} is under Hyperliquid's ${MIN_NOTIONAL_USD:.0f} minimum "
-                              f"(stop {stop_pct:.1f}% too wide for ${risk_usd:.2f} risk)")
+            raise TraderError(f"position ${sz * mid:.2f} is under Hyperliquid's ${MIN_NOTIONAL_USD:.0f} minimum")
 
-        lev = self.exchange.update_leverage(LEVERAGE, coin, is_cross=False)
+        lev = self.exchange.update_leverage(leverage, coin, is_cross=False)
         if not isinstance(lev, dict) or lev.get("status") != "ok":
-            raise TraderError(f"couldn't set {LEVERAGE}x isolated leverage: {lev}")
+            raise TraderError(f"couldn't set {leverage}x isolated leverage: {lev}")
 
         st = _statuses(self.exchange.market_open(coin, False, sz, None, ENTRY_SLIPPAGE))[0]
         if "filled" not in st:
@@ -121,8 +130,9 @@ class Trader:
             self.close(coin)
             raise
 
-        return {"entry": entry, "size": filled, "stop": stop, "tp1": tp,
-                "notional": round(entry * filled, 2), "network": self.network}
+        return {"entry": entry, "size": filled, "stop": stop, "tp1": tp, "leverage": leverage,
+                "notional": round(entry * filled, 2), "risk_usd": round((stop - entry) * filled, 2),
+                "network": self.network}
 
     def close(self, coin: str) -> None:
         self.cancel_all(coin)
