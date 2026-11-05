@@ -60,10 +60,22 @@ class Trader:
     def account_value(self) -> float:
         return float(self.info.user_state(self.address)["marginSummary"]["accountValue"])
 
+    def unified(self) -> bool:
+        """True if the account uses Hyperliquid's unified account (perps margined from spot USDC)."""
+        try:
+            return self.info.post("/info", {"type": "userAbstraction", "user": self.address}) == "unifiedAccount"
+        except Exception:
+            return False
+
     def pot(self) -> float:
         """Account value with unrealised gains ignored and unrealised losses counted."""
         us = self.info.user_state(self.address)
         upnl = sum(float(p["position"].get("unrealizedPnl") or 0) for p in us["assetPositions"])
+        if self.unified():
+            # Collateral is the spot USDC balance (it already includes margin held for open perps)
+            usdc = sum(float(b["total"]) for b in self.info.spot_user_state(self.address)["balances"]
+                       if b["coin"] == "USDC")
+            return usdc + min(0.0, upnl)
         return float(us["marginSummary"]["accountValue"]) - max(0.0, upnl)
 
     def open_coins(self) -> set:
