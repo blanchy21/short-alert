@@ -69,6 +69,13 @@ jobs:
           from hl_trader import Trader
           t = Trader()
           print(f"Connected to {t.network}: pot ${t.pot():.2f}, API wallet approved for orders")
+          # Signed request that places nothing: cancel an order id that doesn't exist
+          r = t.exchange.cancel("BTC", 1)
+          st = (r.get("response") or {}).get("data", {}).get("statuses", [{}])[0] if isinstance(r, dict) else {}
+          if isinstance(r, dict) and r.get("status") == "ok":
+              print(f"Signed order request accepted by Hyperliquid (dummy cancel: {st.get('error', st)})")
+          else:
+              raise SystemExit(f"Signed order request REJECTED: {r}")
           EOF
         env:
           TRADING_MODE: ${{ vars.TRADING_MODE || 'paper' }}
