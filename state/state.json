@@ -12,27 +12,9 @@
     "kPEPE": "46, score 46",
     "ZEC": "46, score 46"
   },
-  "paper_pnl_today": -1.08,
+  "paper_pnl_today": -0.05,
   "last_tally_date": "2026-11-05",
-  "open": [
-    {
-      "coin": "W",
-      "score": 55,
-      "entry": 0.01169,
-      "stop": 0.012,
-      "tp1": 0.01148,
-      "entry_ms": 1793985051080,
-      "entry_time": "2026-11-06T17:10:51.080546+00:00",
-      "change_24h": 13.39,
-      "risk_usd": 1.77,
-      "notional": 66.83,
-      "leverage": 5,
-      "live": true,
-      "size": 5717.1,
-      "network": "mainnet",
-      "stop0": 0.012
-    }
-  ],
+  "open": [],
   "closed": [
     {
       "coin": "USUAL",
@@ -69,6 +51,28 @@
       "r": -1.0,
       "pnl_usd": -1.36,
       "exit_time": "2026-11-06T14:40:43.578534+00:00"
+    },
+    {
+      "coin": "W",
+      "score": 55,
+      "entry": 0.01169,
+      "stop": 0.012,
+      "tp1": 0.01148,
+      "entry_ms": 1793985051080,
+      "entry_time": "2026-11-06T17:10:51.080546+00:00",
+      "change_24h": 13.39,
+      "risk_usd": 1.77,
+      "notional": 66.83,
+      "leverage": 5,
+      "live": true,
+      "size": 5717.1,
+      "network": "mainnet",
+      "stop0": 0.012,
+      "exit": 0.0115,
+      "exit_reason": "TP1",
+      "r": 0.58,
+      "pnl_usd": 1.03,
+      "exit_time": "2026-11-06T17:40:39.932809+00:00"
     }
   ],
   "day_start_pot": 52.8,
