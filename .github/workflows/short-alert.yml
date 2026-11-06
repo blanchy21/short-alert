@@ -1,7 +1,7 @@
 name: short-alert
 
 on:
-  # Started every 30 min (:07 and :37) by cron-job.org via the GitHub API - see README.
+  # Started every 5 min by cron-job.org via the GitHub API - see README.
   # GitHub's own schedule was removed: it skipped most hours and would use free minutes twice.
   workflow_dispatch:       # cron-job.org trigger + "Run workflow" button for manual tests
     inputs:

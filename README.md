@@ -32,7 +32,7 @@ Hourly moon-dump short alerts for Hyperliquid, sent to Telegram. Paper mode by d
 4. Repo → **Actions** tab → enable workflows if asked → **short-alert → Run workflow** to test.
    The log shows every mooner scored and why it was or wasn't alerted.
 
-After that it runs every 30 minutes (see step 4).
+After that it runs every 5 minutes (see step 4).
 
 ### 3. Turn off the Grokbot hourly runs
 Once Telegram alerts are coming through, stop Short Seller's hourly paper runs on Grokbot so you're not paying for both.
@@ -40,15 +40,18 @@ Once Telegram alerts are coming through, stop Short Seller's hourly paper runs o
 ### 4. Reliable hourly trigger (cron-job.org)
 GitHub's own schedule is "best effort" and on this repo it skipped most hours, so it has been
 removed: **cron-job.org is the only trigger.** If that job stops, nothing scans.
-Every 30 minutes uses ~1,490 of the 2,000 free Actions minutes a month (each run rounds up to
-1 minute). Don't go more often: when the minutes run out, Actions stops until next month.
+The repo is **public**, so Actions minutes are free and unlimited: it scans every **5 minutes**.
+(If the repo is ever made private again, drop back to every 30 minutes — private repos get
+2,000 free minutes a month, each run rounds up to 1 minute, and Actions stops when they run out.)
+Public means anyone can read the code, `state/state.json` (trades and P&L) and run logs.
+Secrets stay hidden and only you can run the workflow. Never commit keys or tokens.
 
 1. **GitHub token:** github.com → Settings → Developer settings → Personal access tokens →
    **Fine-grained tokens** → Generate. Repository access: only `short-alert`. Permissions:
    **Actions: Read and write** (nothing else). Pick an expiry and set a reminder to renew it.
 2. **cron-job.org:** sign up (free) → Create cronjob:
    - URL: `https://api.github.com/repos/blanchy21/short-alert/actions/workflows/short-alert.yml/dispatches`
-   - Schedule: custom `7,37 * * * *` (every 30 minutes)
+   - Schedule: custom `2-59/5 * * * *` (every 5 minutes)
    - Advanced → Request method **POST**, headers:
      - `Accept: application/vnd.github+json`
      - `Authorization: Bearer <your token>`
