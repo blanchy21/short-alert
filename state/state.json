@@ -2,7 +2,8 @@
   "date": "2026-11-06",
   "alerted_today": [
     "USUAL",
-    "W"
+    "W",
+    "ZEC"
   ],
   "near_misses_today": {
     "W": "65, funding -0.0117%/h too negative",
@@ -14,7 +15,26 @@
   },
   "paper_pnl_today": -0.05,
   "last_tally_date": "2026-11-05",
-  "open": [],
+  "open": [
+    {
+      "coin": "ZEC",
+      "score": 58,
+      "entry": 1354.8,
+      "stop": 1405.4,
+      "tp1": 1327.2,
+      "tp2": 1308.3,
+      "stop0": 1405.4,
+      "entry_ms": 1793988082331,
+      "entry_time": "2026-11-06T18:01:22.331419+00:00",
+      "change_24h": 10.43,
+      "risk_usd": 2.53,
+      "notional": 67.74,
+      "leverage": 5,
+      "live": true,
+      "size": 0.05,
+      "network": "mainnet"
+    }
+  ],
   "closed": [
     {
       "coin": "USUAL",
