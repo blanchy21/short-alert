@@ -100,6 +100,16 @@ def send_telegram(text: str) -> None:
         print(f"Telegram send failed: {e}")
 
 
+def warn_once(state: dict, key: str, text: str) -> None:
+    """Send a warning to Telegram at most once per Dublin day per key (scans run every 5 min)."""
+    sent = state.setdefault("warned_today", {})
+    if sent.get(key) == state.get("date"):
+        print(text)
+        return
+    sent[key] = state.get("date")
+    send_telegram(text)
+
+
 def load_state() -> dict:
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE) as f:
@@ -353,13 +363,17 @@ def main() -> None:
         if trader_err:
             print(f"Hyperliquid connection failed: {trader_err}")
             if LIVE:
-                send_telegram(f"⚠️ LIVE mode but Hyperliquid connection failed: {trader_err}\n"
-                              f"New setups will be paper-traded until fixed.")
+                warn_once(state, "connection", f"⚠️ LIVE mode but Hyperliquid connection failed: {trader_err}\n"
+                                               f"New setups will be paper-traded until fixed. "
+                                               f"(This warning is sent once a day.)")
     print(f"Mode: {TRADING_MODE}" + (f" ({trader.network})" if trader else ""))
 
     # 1. Manage open trades
     for m in update_open_trades(state, marks, trader):
-        send_telegram(m)
+        if m.startswith("⚠️"):
+            warn_once(state, m.split("\n")[0][:60], m)  # repeat problems: once a day
+        else:
+            send_telegram(m)
 
     # 2. Pot, caps and market filter
     pot = None
@@ -367,7 +381,7 @@ def main() -> None:
         try:
             pot = trader.pot()
         except Exception as e:
-            send_telegram(f"⚠️ Couldn't read Hyperliquid account value: {e}\nNew setups will be paper-traded.")
+            warn_once(state, "pot", f"⚠️ Couldn't read Hyperliquid account value: {e}\nNew setups will be paper-traded.")
             trader = None
     if pot is None:
         pot = PAPER_START_POT + sum(t["pnl_usd"] for t in state["closed"] if not t.get("live"))

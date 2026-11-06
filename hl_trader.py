@@ -43,7 +43,24 @@ class Trader:
         url = constants.TESTNET_API_URL if self.network == "testnet" else constants.MAINNET_API_URL
         self.address = addr
         self.info = Info(url, skip_ws=True)
+        self.signer = eth_account.Account.from_key(key).address
         self.exchange = Exchange(eth_account.Account.from_key(key), url, account_address=addr)
+        self.check_agent()
+
+    def check_agent(self) -> None:
+        """Fail early if the API wallet isn't approved for this account (orders would be rejected)."""
+        if self.signer.lower() == self.address.lower():
+            return  # signing with the main wallet itself
+        try:
+            role = self.info.post("/info", {"type": "userRole", "user": self.signer})
+        except Exception:
+            return  # can't check; let the order attempt report any problem
+        owner = (role.get("data") or {}).get("user", "") if isinstance(role, dict) else ""
+        if role.get("role") != "agent" or owner.lower() != self.address.lower():
+            raise TraderError(
+                f"API wallet {self.signer[:6]}…{self.signer[-4:]} is not approved for account "
+                f"{self.address[:6]}…{self.address[-4:]} on {self.network}. Approve it on Hyperliquid "
+                f"(More → API → Authorize), or save the key of an approved API wallet.")
 
     # ------------------------------------------------------------ rounding
     def _sz_decimals(self, coin: str) -> int:

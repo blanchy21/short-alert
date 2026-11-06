@@ -68,7 +68,7 @@ jobs:
               raise SystemExit
           from hl_trader import Trader
           t = Trader()
-          print(f"Connected to {t.network}: account value ${t.account_value():.2f}")
+          print(f"Connected to {t.network}: pot ${t.pot():.2f}, API wallet approved for orders")
           EOF
         env:
           TRADING_MODE: ${{ vars.TRADING_MODE || 'paper' }}
