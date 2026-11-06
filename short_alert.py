@@ -58,7 +58,7 @@ MAX_TOTAL_RISK_PCT = 20.0     # open shorts at their stops + today's losses <= 2
 DAILY_LOSS_PCT = 20.0         # daily stop: 20% of the day-start pot
 MAX_TP_PCT = 20.0             # take profit no further than 20% below entry
 EXCLUDED_COINS = {"BTC", "ETH"}
-MIN_FUNDING = -0.0001         # hourly rate; skip if more negative (shorts paying heavily)
+MIN_FUNDING = -0.0002         # hourly rate (-0.02%/h); skip if more negative (shorts paying heavily)
 PAPER_START_POT = 58.0        # paper mode's starting pot (USD)
 LEGACY_RISK_USD = 1.16        # risk of trades logged before sizing changed
 BTC_EMA_PERIOD = 21           # on 4h candles

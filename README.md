@@ -81,7 +81,7 @@ The **pot** is the live account value, with unrealised gains ignored and losses 
 - at most **3 open shorts** (positions opened elsewhere on the account count too)
 - all open shorts at their stops + today's realised losses ≤ **20% of the day-start pot**; trades are shrunk or skipped to fit
 - **daily stop** at a 20% loss of the day-start pot — nothing new until the next Dublin day
-- BTC and ETH excluded; funding below −0.01%/h skipped
+- BTC and ETH excluded; funding below −0.02%/h skipped
 
 In live mode each alert:
 1. opens a market short at that size
