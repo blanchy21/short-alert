@@ -1,8 +1,7 @@
 {
   "date": "2026-11-06",
   "alerted_today": [
-    "USUAL",
-    "W"
+    "USUAL"
   ],
   "near_misses_today": {
     "W": "65, funding -0.0117%/h too negative",
@@ -14,21 +13,7 @@
   },
   "paper_pnl_today": -1.08,
   "last_tally_date": "2026-11-05",
-  "open": [
-    {
-      "coin": "W",
-      "score": 55,
-      "entry": 0.0117,
-      "stop": 0.011988214285714286,
-      "tp1": 0.01145228,
-      "entry_ms": 1793983550034,
-      "entry_time": "2026-11-06T16:45:50.034354+00:00",
-      "change_24h": 12.61,
-      "risk_usd": 1.65,
-      "notional": 67.11,
-      "leverage": 5
-    }
-  ],
+  "open": [],
   "closed": [
     {
       "coin": "USUAL",
