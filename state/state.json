@@ -1,7 +1,8 @@
 {
   "date": "2026-11-06",
   "alerted_today": [
-    "USUAL"
+    "USUAL",
+    "W"
   ],
   "near_misses_today": {
     "W": "65, funding -0.0117%/h too negative"
@@ -21,6 +22,19 @@
       "risk_usd": 0.94,
       "notional": 39.14,
       "leverage": 3
+    },
+    {
+      "coin": "W",
+      "score": 65,
+      "entry": 0.01137,
+      "stop": 0.011603571428571428,
+      "tp1": 0.01127656,
+      "entry_ms": 1793974842767,
+      "entry_time": "2026-11-06T14:20:42.767221+00:00",
+      "change_24h": 5.87,
+      "risk_usd": 1.36,
+      "notional": 66.16,
+      "leverage": 5
     }
   ],
   "closed": [],
