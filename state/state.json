@@ -7,7 +7,8 @@
   "near_misses_today": {
     "W": "65, funding -0.0117%/h too negative",
     "USUAL": "45, score 45",
-    "MEGA": "46, score 46"
+    "MEGA": "46, score 46",
+    "RSR": "46, score 46"
   },
   "paper_pnl_today": -1.08,
   "last_tally_date": "2026-11-05",
@@ -50,5 +51,8 @@
       "exit_time": "2026-11-06T14:40:43.578534+00:00"
     }
   ],
-  "day_start_pot": 52.8
+  "day_start_pot": 52.8,
+  "warned_today": {
+    "connection": "2026-11-06"
+  }
 }
