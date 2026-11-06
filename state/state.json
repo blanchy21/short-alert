@@ -29,7 +29,8 @@
       "leverage": 5,
       "live": true,
       "size": 5717.1,
-      "network": "mainnet"
+      "network": "mainnet",
+      "stop0": 0.012
     }
   ],
   "closed": [
