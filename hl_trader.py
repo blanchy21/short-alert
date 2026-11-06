@@ -115,12 +115,15 @@ class Trader:
                 self.exchange.cancel(coin, o["oid"])
 
     # ------------------------------------------------------------ trading
-    def open_short(self, coin: str, notional_usd: float, leverage: int, stop_pct: float, tp_pct: float) -> dict:
+    def open_short(self, coin: str, notional_usd: float, leverage: int, stop_pct: float, tp_pct: float,
+                   tp2_pct: float | None = None, tp1_fraction: float = 0.5) -> dict:
         """
         notional_usd: position value to open (sized by short_alert.size_trade)
         leverage:     isolated leverage (margin = notional / leverage)
         stop_pct:     stop distance above entry in % (positive)
-        tp_pct:       take-profit distance below entry in % (positive)
+        tp_pct:       TP1 distance below entry in % (positive)
+        tp2_pct:      TP2 distance below entry in % (positive); None = whole position at TP1
+        tp1_fraction: share of the position closed at TP1 when TP2 is used
         """
         if self.position(coin) != 0:
             raise TraderError(f"already have a {coin} position on the exchange")
@@ -156,13 +159,26 @@ class Trader:
                 closed = f"CLOSING ALSO FAILED ({e}) - CLOSE {coin} BY HAND"
             raise TraderError(f"stop-loss rejected ({sl_err}); {closed}")
 
-        # 2. Take-profit. If this fails the position stays open, protected by the stop.
-        try:
-            tp_err = self._place_trigger(coin, filled, tp, "tp")
-        except Exception as e:
-            tp_err = f"{type(e).__name__}: {e}"
+        # 2. Take-profits. If these fail the position stays open, protected by the stop.
+        tp2 = self.round_px(coin, entry * (1 - tp2_pct / 100)) if tp2_pct else None
+        tp1_sz = self.round_sz(coin, filled * tp1_fraction) if tp2 else filled
+        tp2_sz = self.round_sz(coin, filled - tp1_sz) if tp2 else 0
+        if tp2 and (tp1_sz * entry < MIN_NOTIONAL_USD or tp2_sz * entry < MIN_NOTIONAL_USD or tp2 >= tp):
+            tp2, tp1_sz, tp2_sz = None, filled, 0   # too small to split: whole position at TP1
+        errs = []
+        for px, part, kind in ((tp, tp1_sz, "TP1"), (tp2, tp2_sz, "TP2")):
+            if not px:
+                continue
+            try:
+                e = self._place_trigger(coin, part, px, "tp")
+            except Exception as ex:
+                e = f"{type(ex).__name__}: {ex}"
+            if e:
+                errs.append(f"{kind}: {e}")
+        tp_err = "; ".join(errs) or None
 
         return {"entry": entry, "size": filled, "stop": stop, "tp1": tp, "leverage": leverage, "tp_error": tp_err,
+                "tp2": tp2, "tp1_size": tp1_sz, "tp2_size": tp2_sz,
                 "notional": round(entry * filled, 2), "risk_usd": round((stop - entry) * filled, 2),
                 "network": self.network}
 
@@ -182,6 +198,24 @@ class Trader:
             return statuses[0]["error"]
         return None
 
+    def move_stop(self, coin: str, new_stop: float, tp2: float | None) -> float:
+        """After TP1: cancel the old orders, put the stop at new_stop (and TP2 back) for what's left.
+        Returns the new stop price. If the stop can't be placed, closes the rest."""
+        remaining = abs(self.position(coin))
+        if remaining == 0:
+            return new_stop
+        self.cancel_all(coin)
+        new_stop = self.round_px(coin, new_stop)
+        err = self._place_trigger(coin, remaining, new_stop, "sl")
+        if err:
+            self.close(coin)
+            raise TraderError(f"break-even stop rejected ({err}); rest of position closed")
+        if tp2:
+            err = self._place_trigger(coin, remaining, self.round_px(coin, tp2), "tp")
+            if err:
+                raise TraderError(f"TP2 re-place rejected ({err}); break-even stop is in place")
+        return new_stop
+
     def close(self, coin: str) -> None:
         self.cancel_all(coin)
         if self.position(coin) != 0:
@@ -197,7 +231,8 @@ class Trader:
         sz = sum(float(f["sz"]) for f in closes)
         px = sum(float(f["px"]) * float(f["sz"]) for f in closes) / sz
         pnl = sum(float(f["closedPnl"]) for f in closes) - sum(float(f["fee"]) for f in fills)
-        return {"exit": px, "pnl_usd": round(pnl, 2)}
+        last = max(closes, key=lambda f: int(f["time"]))
+        return {"exit": px, "last_px": float(last["px"]), "pnl_usd": round(pnl, 2)}
 
     def wait_flat(self, coin: str, tries: int = 5) -> bool:
         for _ in range(tries):

@@ -57,6 +57,8 @@ MAX_OPEN_SHORTS = 3
 MAX_TOTAL_RISK_PCT = 20.0     # open shorts at their stops + today's losses <= 20% of day-start pot
 DAILY_LOSS_PCT = 20.0         # daily stop: 20% of the day-start pot
 MAX_TP_PCT = 20.0             # take profit no further than 20% below entry
+TP1_CLOSE_FRACTION = 0.5      # take half at TP1, the rest at TP2
+BREAKEVEN_PCT = 0.1           # after TP1, stop moves to 0.1% below entry (covers both fees)
 EXCLUDED_COINS = {"BTC", "ETH"}
 MIN_FUNDING = -0.0002         # hourly rate (-0.02%/h); skip if more negative (shorts paying heavily)
 PAPER_START_POT = 58.0        # paper mode's starting pot (USD)
@@ -192,9 +194,18 @@ def trade_levels(candles: list) -> dict:
         tp1, tp1_src = (entry - 2 * atr if atr else entry * 0.97), "2x ATR"
     if tp1 < entry * (1 - MAX_TP_PCT / 100):
         tp1, tp1_src = entry * (1 - MAX_TP_PCT / 100), f"-{MAX_TP_PCT:.0f}% cap"
+    # TP2: next strong support below TP1 (at least 0.5% further), else twice TP1's distance
+    deeper = [s for s in strong if s["price"] < tp1 * 0.995]
+    if deeper:
+        tp2, tp2_src = deeper[0]["price"], deeper[0]["type"]
+    else:
+        tp2, tp2_src = entry - 2 * (entry - tp1), "2x TP1 distance"
+    if tp2 < entry * (1 - MAX_TP_PCT / 100):
+        tp2, tp2_src = entry * (1 - MAX_TP_PCT / 100), f"-{MAX_TP_PCT:.0f}% cap"
     resist = sr.get("resistances", [])
     return {
         "entry": entry, "stop": stop, "tp1": tp1, "tp1_src": tp1_src,
+        "tp2": tp2, "tp2_src": tp2_src, "tp2_pct": (tp2 - entry) / entry * 100,
         "res_stop": resist[0]["price"] if resist else None,
         "risk_pct": (stop - entry) / entry * 100,
         "tp1_pct": (tp1 - entry) / entry * 100,
@@ -211,93 +222,140 @@ def get_trader():
         return None, str(e)
 
 
-def close_live_trade(t: dict, trader, marks: dict, now_ms: int):
-    """Returns (exit_px, reason, pnl_usd) if the live trade is closed, else None."""
+def breakeven_px(t: dict) -> float:
+    return t["entry"] * (1 - BREAKEVEN_PCT / 100)
+
+
+def classify_exit(t: dict, last_px: float) -> str:
+    """Name the exit from where the final fill happened."""
+    if t.get("tp2") and last_px <= t["tp2"] * 1.005:
+        return "TP1 + TP2"
+    if t.get("tp1_hit"):
+        if last_px >= t["stop"] * 0.995:
+            return "TP1 + break-even stop"
+        return "TP1 + CLOSED"
+    if last_px >= t["stop"] * 0.995:
+        return "STOP"
+    if last_px <= t["tp1"] * 1.005:
+        return "TP1"
+    return "CLOSED"
+
+
+def manage_live_trade(t: dict, trader, marks: dict, now_ms: int):
+    """Returns ("open", message|None) or ("closed", (exit_px, reason, pnl_usd))."""
     coin = t["coin"]
-    if trader.position(coin) != 0:
+    pos = abs(trader.position(coin))
+    if pos > 0:
+        # TP1 filled (position shrank): move the stop to break-even for the rest
+        if t.get("tp2") and not t.get("tp1_hit") and pos < t["size"] * 0.75:
+            new_stop = trader.move_stop(coin, breakeven_px(t), t["tp2"])
+            t.update(tp1_hit=True, stop=new_stop)
+            return "open", (f"🎯 LIVE TP1 hit {coin} — {fmt(t['size'] - pos)} closed at ~{fmt(t['tp1'])}\n"
+                            f"Stop moved to break-even {fmt(new_stop)} for the other {fmt(pos)} | "
+                            f"TP2 {fmt(t['tp2'])}")
         if now_ms - t["entry_ms"] < MAX_HOLD_HOURS * HOUR_MS:
-            return None
+            return "open", None
         trader.close(coin)
         trader.wait_flat(coin)
-        reason = "24h TIME EXIT"
+        forced = "24h TIME EXIT" + (" (after TP1)" if t.get("tp1_hit") else "")
     else:
         trader.cancel_all(coin)  # leftover stop/TP order
-        reason = None
+        forced = None
     fills = trader.closing_fills(coin, t["entry_ms"])
     if fills is None:
-        return marks.get(coin, t["entry"]), reason or "CLOSED (no fills found)", 0.0
-    if reason is None:
-        if fills["exit"] >= t["stop"] * 0.995:
-            reason = "STOP"
-        elif fills["exit"] <= t["tp1"] * 1.005:
-            reason = "TP1"
+        return "closed", (marks.get(coin, t["entry"]), forced or "CLOSED (no fills found)", 0.0)
+    return "closed", (fills["exit"], forced or classify_exit(t, fills.get("last_px", fills["exit"])), fills["pnl_usd"])
+
+
+def paper_path(t: dict, candles: list, mark, now_ms: int) -> dict:
+    """Replay a paper trade from its entry. Stop is checked before targets in each candle (conservative)."""
+    stop0 = t.get("stop0", t["stop"])
+    f = TP1_CLOSE_FRACTION if t.get("tp2") else 1.0
+    tp1_hit, stop = False, stop0
+    bars = [(float(c["h"]), float(c["l"])) for c in (candles if isinstance(candles, list) else [])
+            if int(c["t"]) > t["entry_ms"]]  # candles that opened before entry are pre-trade
+    if mark is not None:
+        bars.append((mark, mark))
+    for h, l in bars:
+        if not tp1_hit:
+            if h >= stop:
+                return {"tp1_hit": False, "stop": stop, "exit": stop, "reason": "STOP"}
+            if l <= t["tp1"]:
+                if f >= 1.0:
+                    return {"tp1_hit": True, "stop": stop, "exit": t["tp1"], "reason": "TP1"}
+                tp1_hit, stop = True, breakeven_px(t)
+                continue  # rest is judged from the next bar
         else:
-            reason = "CLOSED"
-    return fills["exit"], reason, fills["pnl_usd"]
+            if h >= stop:
+                return {"tp1_hit": True, "stop": stop, "exit": stop, "reason": "TP1 + break-even stop"}
+            if l <= t["tp2"]:
+                return {"tp1_hit": True, "stop": stop, "exit": t["tp2"], "reason": "TP1 + TP2"}
+    if now_ms - t["entry_ms"] >= MAX_HOLD_HOURS * HOUR_MS and mark is not None:
+        return {"tp1_hit": tp1_hit, "stop": stop, "exit": mark,
+                "reason": "24h TIME EXIT" + (" (after TP1)" if tp1_hit else "")}
+    return {"tp1_hit": tp1_hit, "stop": stop, "exit": None, "reason": None}
+
+
+def paper_r(t: dict, exit_px: float, tp1_hit: bool) -> float:
+    stop0 = t.get("stop0", t["stop"])
+    risk = stop0 - t["entry"]
+    if t.get("tp2") and tp1_hit:
+        f = TP1_CLOSE_FRACTION
+        return (f * (t["entry"] - t["tp1"]) + (1 - f) * (t["entry"] - exit_px)) / risk
+    return (t["entry"] - exit_px) / risk
 
 
 # ---------------------------------------------------------------- open trades
+def close_trade(state: dict, t: dict, exit_px: float, reason: str, pnl: float, r_mult: float, kind: str) -> str:
+    t.update({"exit": exit_px, "exit_reason": reason, "r": round(r_mult, 2),
+              "pnl_usd": round(pnl, 2), "exit_time": now_utc().isoformat()})
+    state["closed"].append(t)
+    state["paper_pnl_today"] = round(state["paper_pnl_today"] + pnl, 2)
+    icon = "✅" if pnl > 0 else "❌"
+    after = " after fees" if kind == "LIVE" else ""
+    return (f"{icon} {kind} CLOSE {t['coin']} — {reason}\n"
+            f"Entry {fmt(t['entry'])} → exit {fmt(exit_px)} | {r_mult:+.2f}R ({pnl:+.2f} USD{after})")
+
+
 def update_open_trades(state: dict, marks: dict, trader) -> list:
-    """Close trades on stop / TP1 / 24h. Returns closing messages."""
+    """Manage open trades: TP1 (half) + break-even stop, TP2, stop, 24h. Returns Telegram messages."""
     msgs, still_open = [], []
     now_ms = int(time.time() * 1000)
     for t in state["open"]:
+        t.setdefault("stop0", t["stop"])
         if t.get("live"):
             if trader is None:
                 still_open.append(t)
                 msgs.append(f"⚠️ Can't check LIVE {t['coin']} trade - Hyperliquid connection failed")
                 continue
             try:
-                res = close_live_trade(t, trader, marks, now_ms)
+                status, info = manage_live_trade(t, trader, marks, now_ms)
             except Exception as e:
                 still_open.append(t)
                 msgs.append(f"⚠️ Error managing LIVE {t['coin']} trade: {e}")
                 continue
-            if res is None:
+            if status == "open":
                 still_open.append(t)
+                if info:
+                    msgs.append(info)
                 continue
-            exit_px, reason, pnl = res
-            r_mult = pnl / trade_risk(t)
-            t.update({"exit": exit_px, "exit_reason": reason, "r": round(r_mult, 2),
-                      "pnl_usd": round(pnl, 2), "exit_time": now_utc().isoformat()})
-            state["closed"].append(t)
-            state["paper_pnl_today"] = round(state["paper_pnl_today"] + pnl, 2)
-            icon = "✅" if pnl > 0 else "❌"
-            msgs.append(f"{icon} LIVE CLOSE {t['coin']} — {reason}\n"
-                        f"Entry {fmt(t['entry'])} → exit {fmt(exit_px)} | {r_mult:+.2f}R ({pnl:+.2f} USD after fees)")
+            exit_px, reason, pnl = info
+            msgs.append(close_trade(state, t, exit_px, reason, pnl, pnl / trade_risk(t), "LIVE"))
             continue
+
         candles = fetch_candles(t["coin"], "1h", MAX_HOLD_HOURS + 2)
         time.sleep(0.08)
-        exit_px, reason = None, None
-        for c in candles if isinstance(candles, list) else []:
-            if int(c["t"]) <= t["entry_ms"]:
-                continue  # candle opened before entry - its range is pre-trade
-            if float(c["h"]) >= t["stop"]:          # check stop first (conservative)
-                exit_px, reason = t["stop"], "STOP"
-                break
-            if float(c["l"]) <= t["tp1"]:
-                exit_px, reason = t["tp1"], "TP1"
-                break
-        mark = marks.get(t["coin"])
-        if exit_px is None and mark is not None:
-            if mark >= t["stop"]:
-                exit_px, reason = t["stop"], "STOP"
-            elif mark <= t["tp1"]:
-                exit_px, reason = t["tp1"], "TP1"
-            elif now_ms - t["entry_ms"] >= MAX_HOLD_HOURS * HOUR_MS:
-                exit_px, reason = mark, "24h TIME EXIT"
-        if exit_px is None:
+        res = paper_path(t, candles, marks.get(t["coin"]), now_ms)
+        if res["tp1_hit"] and not t.get("tp1_hit") and t.get("tp2"):
+            t.update(tp1_hit=True, stop=res["stop"])
+            if res["exit"] is None:
+                msgs.append(f"🎯 PAPER TP1 hit {t['coin']} — half closed at {fmt(t['tp1'])}\n"
+                            f"Stop moved to break-even {fmt(res['stop'])} | TP2 {fmt(t['tp2'])}")
+        if res["exit"] is None:
             still_open.append(t)
             continue
-        r_mult = (t["entry"] - exit_px) / (t["stop"] - t["entry"])
-        pnl = r_mult * trade_risk(t)
-        t.update({"exit": exit_px, "exit_reason": reason, "r": round(r_mult, 2),
-                  "pnl_usd": round(pnl, 2), "exit_time": now_utc().isoformat()})
-        state["closed"].append(t)
-        state["paper_pnl_today"] = round(state["paper_pnl_today"] + pnl, 2)
-        icon = "✅" if pnl > 0 else "❌"
-        msgs.append(f"{icon} PAPER CLOSE {t['coin']} — {reason}\n"
-                    f"Entry {fmt(t['entry'])} → exit {fmt(exit_px)} | {r_mult:+.2f}R ({pnl:+.2f} USD)")
+        r_mult = paper_r(t, res["exit"], res["tp1_hit"])
+        msgs.append(close_trade(state, t, res["exit"], res["reason"], r_mult * trade_risk(t), r_mult, "PAPER"))
     state["open"] = still_open
     return msgs
 
@@ -456,10 +514,13 @@ def main() -> None:
         live = None
         if LIVE and trader:
             try:
-                live = trader.open_short(coin, sz["notional"], sz["lev"], lv["risk_pct"], -lv["tp1_pct"])
-                lv.update(entry=live["entry"], stop=live["stop"], tp1=live["tp1"])
+                live = trader.open_short(coin, sz["notional"], sz["lev"], lv["risk_pct"], -lv["tp1_pct"],
+                                         -lv["tp2_pct"], TP1_CLOSE_FRACTION)
+                lv.update(entry=live["entry"], stop=live["stop"], tp1=live["tp1"], tp2=live["tp2"])
                 lv["risk_pct"] = (lv["stop"] - lv["entry"]) / lv["entry"] * 100
                 lv["tp1_pct"] = (lv["tp1"] - lv["entry"]) / lv["entry"] * 100
+                if lv["tp2"]:
+                    lv["tp2_pct"] = (lv["tp2"] - lv["entry"]) / lv["entry"] * 100
                 sz.update(notional=live["notional"], risk_usd=live["risk_usd"])
             except Exception as e:
                 send_telegram(f"⚠️ LIVE order for {coin} not placed: {e}\nLogged as a paper trade instead.")
@@ -468,11 +529,17 @@ def main() -> None:
                      f"= {sz['risk_usd'] / pot * 100:.1f}% of ${pot:.2f} pot")
         if live:
             footer = (f"💰 LIVE SHORT OPEN on Hyperliquid{' TESTNET' if live['network'] == 'testnet' else ''}: "
-                      f"{live['size']} {coin} — stop" + (" & TP1 orders placed" if not live.get("tp_error") else
-                      f" placed, ⚠️ TP1 order REJECTED ({live['tp_error']}) — set TP1 by hand or let stop/24h exit"))
+                      f"{live['size']} {coin} — stop" + (" & TP orders placed" if not live.get("tp_error") else
+                      f" placed, ⚠️ TP order REJECTED ({live['tp_error']}) — set it by hand or let stop/24h exit"))
         else:
             footer = "(Paper trade logged — no order placed)"
 
+        if lv.get("tp2"):
+            tp_lines = (f"TP1 {fmt(lv['tp1'])} ({lv['tp1_pct']:.1f}%, {lv['tp1_src']}) — close half, "
+                        f"then stop to break-even\n"
+                        f"TP2 {fmt(lv['tp2'])} ({lv['tp2_pct']:.1f}%, {lv['tp2_src']}) — the other half")
+        else:
+            tp_lines = f"TP1 {fmt(lv['tp1'])} ({lv['tp1_pct']:.1f}%, {lv['tp1_src']}) — whole position"
         grade = "A+" if score >= 70 else "A"
         sigs = "\n".join(f"• {s}" for s in sd["signals"][:6])
         res = f"\n(Old resistance stop: {fmt(lv['res_stop'])})" if lv["res_stop"] else ""
@@ -481,7 +548,7 @@ def main() -> None:
             f"24h: {chg:+.1f}% | peak {sd['hours_since_peak']}h ago ({sd['drop_from_peak']:+.1f}%)\n"
             f"Entry ~{fmt(lv['entry'])}\n"
             f"Stop {fmt(lv['stop'])} (+{lv['risk_pct']:.1f}%, 1.5x ATR)\n"
-            f"TP1 {fmt(lv['tp1'])} ({lv['tp1_pct']:.1f}%, {lv['tp1_src']})\n"
+            f"{tp_lines}\n"
             f"Exit within {sd['exit_window']} — bounce risk {sd['bounce_risk']}\n"
             f"Funding {cand['funding']*100:.4f}% | {btc['note']}\n"
             f"{sigs}{res}\n"
@@ -491,7 +558,7 @@ def main() -> None:
         state["alerted_today"].append(coin)
         trade = {
             "coin": coin, "score": score, "entry": lv["entry"], "stop": lv["stop"],
-            "tp1": lv["tp1"], "entry_ms": int(time.time() * 1000),
+            "tp1": lv["tp1"], "tp2": lv.get("tp2"), "stop0": lv["stop"], "entry_ms": int(time.time() * 1000),
             "entry_time": now_utc().isoformat(), "change_24h": round(chg, 2),
             "risk_usd": sz["risk_usd"], "notional": sz["notional"], "leverage": sz["lev"],
         }
