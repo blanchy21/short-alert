@@ -1,9 +1,9 @@
 name: short-alert
 
 on:
-  schedule:
-    - cron: "7 * * * *"   # every hour at :07 (UTC)
-  workflow_dispatch:       # "Run workflow" button for manual tests
+  # Started every 30 min (:07 and :37) by cron-job.org via the GitHub API - see README.
+  # GitHub's own schedule was removed: it skipped most hours and would use free minutes twice.
+  workflow_dispatch:       # cron-job.org trigger + "Run workflow" button for manual tests
     inputs:
       test_telegram:
         description: "Only send a Telegram test message and check Hyperliquid connection (no scan, no orders)"

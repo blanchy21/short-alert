@@ -32,22 +32,23 @@ Hourly moon-dump short alerts for Hyperliquid, sent to Telegram. Paper mode by d
 4. Repo → **Actions** tab → enable workflows if asked → **short-alert → Run workflow** to test.
    The log shows every mooner scored and why it was or wasn't alerted.
 
-After that it runs every hour by itself. An hourly run uses roughly 720 of the 2,000 free Actions minutes a month on a private repo.
+After that it runs every 30 minutes (see step 4).
 
 ### 3. Turn off the Grokbot hourly runs
 Once Telegram alerts are coming through, stop Short Seller's hourly paper runs on Grokbot so you're not paying for both.
 
 ### 4. Reliable hourly trigger (cron-job.org)
-GitHub's own schedule is "best effort" and on this repo it skipped most hours. An outside cron
-service starts the workflow on time instead; GitHub's schedule stays as a backup. Extra runs are
-safe: runs queue one at a time, each coin trades once a day, and the tally sends once.
+GitHub's own schedule is "best effort" and on this repo it skipped most hours, so it has been
+removed: **cron-job.org is the only trigger.** If that job stops, nothing scans.
+Every 30 minutes uses ~1,490 of the 2,000 free Actions minutes a month (each run rounds up to
+1 minute). Don't go more often: when the minutes run out, Actions stops until next month.
 
 1. **GitHub token:** github.com → Settings → Developer settings → Personal access tokens →
    **Fine-grained tokens** → Generate. Repository access: only `short-alert`. Permissions:
    **Actions: Read and write** (nothing else). Pick an expiry and set a reminder to renew it.
 2. **cron-job.org:** sign up (free) → Create cronjob:
    - URL: `https://api.github.com/repos/blanchy21/short-alert/actions/workflows/short-alert.yml/dispatches`
-   - Schedule: every hour at minute **7**
+   - Schedule: custom `7,37 * * * *` (every 30 minutes)
    - Advanced → Request method **POST**, headers:
      - `Accept: application/vnd.github+json`
      - `Authorization: Bearer <your token>`
