@@ -20,7 +20,7 @@
       "coin": "ZEC",
       "score": 58,
       "entry": 1354.8,
-      "stop": 1405.4,
+      "stop": 1353.4,
       "tp1": 1327.2,
       "tp2": 1308.3,
       "stop0": 1405.4,
@@ -32,7 +32,8 @@
       "leverage": 5,
       "live": true,
       "size": 0.05,
-      "network": "mainnet"
+      "network": "mainnet",
+      "tp1_hit": true
     }
   ],
   "closed": [
