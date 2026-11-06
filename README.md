@@ -37,6 +37,24 @@ After that it runs every hour by itself. An hourly run uses roughly 720 of the 2
 ### 3. Turn off the Grokbot hourly runs
 Once Telegram alerts are coming through, stop Short Seller's hourly paper runs on Grokbot so you're not paying for both.
 
+### 4. Reliable hourly trigger (cron-job.org)
+GitHub's own schedule is "best effort" and on this repo it skipped most hours. An outside cron
+service starts the workflow on time instead; GitHub's schedule stays as a backup. Extra runs are
+safe: runs queue one at a time, each coin trades once a day, and the tally sends once.
+
+1. **GitHub token:** github.com → Settings → Developer settings → Personal access tokens →
+   **Fine-grained tokens** → Generate. Repository access: only `short-alert`. Permissions:
+   **Actions: Read and write** (nothing else). Pick an expiry and set a reminder to renew it.
+2. **cron-job.org:** sign up (free) → Create cronjob:
+   - URL: `https://api.github.com/repos/blanchy21/short-alert/actions/workflows/short-alert.yml/dispatches`
+   - Schedule: every hour at minute **7**
+   - Advanced → Request method **POST**, headers:
+     - `Accept: application/vnd.github+json`
+     - `Authorization: Bearer <your token>`
+     - `X-GitHub-Api-Version: 2022-11-28`
+   - Request body: `{"ref":"main"}`
+3. Save, then use **Test run**: it should return **204**, and a new run appears in the Actions tab.
+
 ## Paper / live switch
 
 Repo → **Settings → Secrets and variables → Actions → Variables** tab:
