@@ -5,25 +5,12 @@
     "W"
   ],
   "near_misses_today": {
-    "W": "65, funding -0.0117%/h too negative"
+    "W": "65, funding -0.0117%/h too negative",
+    "USUAL": "45, score 45"
   },
-  "paper_pnl_today": 0.28,
+  "paper_pnl_today": -1.08,
   "last_tally_date": "2026-11-05",
-  "open": [
-    {
-      "coin": "W",
-      "score": 65,
-      "entry": 0.01137,
-      "stop": 0.011603571428571428,
-      "tp1": 0.01127656,
-      "entry_ms": 1793974842767,
-      "entry_time": "2026-11-06T14:20:42.767221+00:00",
-      "change_24h": 5.87,
-      "risk_usd": 1.36,
-      "notional": 66.16,
-      "leverage": 5
-    }
-  ],
+  "open": [],
   "closed": [
     {
       "coin": "USUAL",
@@ -42,6 +29,24 @@
       "r": 0.3,
       "pnl_usd": 0.28,
       "exit_time": "2026-11-06T14:35:32.511132+00:00"
+    },
+    {
+      "coin": "W",
+      "score": 65,
+      "entry": 0.01137,
+      "stop": 0.011603571428571428,
+      "tp1": 0.01127656,
+      "entry_ms": 1793974842767,
+      "entry_time": "2026-11-06T14:20:42.767221+00:00",
+      "change_24h": 5.87,
+      "risk_usd": 1.36,
+      "notional": 66.16,
+      "leverage": 5,
+      "exit": 0.011603571428571428,
+      "exit_reason": "STOP",
+      "r": -1.0,
+      "pnl_usd": -1.36,
+      "exit_time": "2026-11-06T14:40:43.578534+00:00"
     }
   ],
   "day_start_pot": 52.8
