@@ -76,6 +76,18 @@ jobs:
               print(f"Signed order request accepted by Hyperliquid (dummy cancel: {st.get('error', st)})")
           else:
               raise SystemExit(f"Signed order request REJECTED: {r}")
+          # Stop-loss order format check: reduce-only, so with no position it can never open a trade
+          coin = os.environ.get("CHECK_COIN", "W")
+          if t.position(coin) == 0:
+              mid = t.mid(coin)
+              sz = t.round_sz(coin, 12 / mid)
+              trig = t.round_px(coin, mid * 1.5)
+              resp = t.exchange.order(coin, True, sz, t.round_px(coin, trig * 1.1),
+                                      {"trigger": {"triggerPx": trig, "isMarket": True, "tpsl": "sl"}}, reduce_only=True)
+              print(f"Stop-order format check on {coin}: {resp}")
+              for o in t.info.open_orders(t.address):
+                  if o["coin"] == coin:
+                      t.exchange.cancel(coin, o["oid"]); print(f"cancelled test order {o['oid']}")
           EOF
         env:
           TRADING_MODE: ${{ vars.TRADING_MODE || 'paper' }}

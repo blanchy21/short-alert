@@ -142,26 +142,45 @@ class Trader:
 
         stop = self.round_px(coin, entry * (1 + stop_pct / 100))
         tp = self.round_px(coin, entry * (1 - tp_pct / 100))
-        try:
-            sl_st, tp_st = _statuses(self.exchange.bulk_orders([
-                {"coin": coin, "is_buy": True, "sz": filled, "reduce_only": True,
-                 "limit_px": self.round_px(coin, stop * 1.10),
-                 "order_type": {"trigger": {"triggerPx": stop, "isMarket": True, "tpsl": "sl"}}},
-                {"coin": coin, "is_buy": True, "sz": filled, "reduce_only": True,
-                 "limit_px": self.round_px(coin, tp * 1.05),
-                 "order_type": {"trigger": {"triggerPx": tp, "isMarket": True, "tpsl": "tp"}}},
-            ], grouping="normalTpsl"))
-            for s in (sl_st, tp_st):
-                if "error" in s:
-                    raise TraderError(f"stop/TP order rejected: {s['error']}")
-        except Exception:
-            # Never leave an unprotected position
-            self.close(coin)
-            raise
 
-        return {"entry": entry, "size": filled, "stop": stop, "tp1": tp, "leverage": leverage,
+        # 1. Stop-loss first, on its own. Without it the position is closed straight away.
+        try:
+            sl_err = self._place_trigger(coin, filled, stop, "sl")
+        except Exception as e:
+            sl_err = f"{type(e).__name__}: {e}"
+        if sl_err:
+            try:
+                self.close(coin)
+                closed = "position closed straight away"
+            except Exception as e:
+                closed = f"CLOSING ALSO FAILED ({e}) - CLOSE {coin} BY HAND"
+            raise TraderError(f"stop-loss rejected ({sl_err}); {closed}")
+
+        # 2. Take-profit. If this fails the position stays open, protected by the stop.
+        try:
+            tp_err = self._place_trigger(coin, filled, tp, "tp")
+        except Exception as e:
+            tp_err = f"{type(e).__name__}: {e}"
+
+        return {"entry": entry, "size": filled, "stop": stop, "tp1": tp, "leverage": leverage, "tp_error": tp_err,
                 "notional": round(entry * filled, 2), "risk_usd": round((stop - entry) * filled, 2),
                 "network": self.network}
+
+    def _place_trigger(self, coin: str, sz: float, trigger_px: float, kind: str) -> str | None:
+        """Place one reduce-only market trigger order to buy back a short. Returns an error string or None."""
+        slip = 1.10 if kind == "sl" else 1.05   # worst fill price allowed once triggered
+        resp = self.exchange.order(
+            coin, True, sz, self.round_px(coin, trigger_px * slip),
+            {"trigger": {"triggerPx": trigger_px, "isMarket": True, "tpsl": kind}},
+            reduce_only=True)
+        if not isinstance(resp, dict) or resp.get("status") != "ok":
+            return f"exchange replied {resp}"
+        statuses = (resp.get("response") or {}).get("data", {}).get("statuses") or []
+        if not statuses:
+            return f"no order status in reply {resp}"
+        if "error" in statuses[0]:
+            return statuses[0]["error"]
+        return None
 
     def close(self, coin: str) -> None:
         self.cancel_all(coin)

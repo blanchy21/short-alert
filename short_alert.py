@@ -468,7 +468,8 @@ def main() -> None:
                      f"= {sz['risk_usd'] / pot * 100:.1f}% of ${pot:.2f} pot")
         if live:
             footer = (f"💰 LIVE SHORT OPEN on Hyperliquid{' TESTNET' if live['network'] == 'testnet' else ''}: "
-                      f"{live['size']} {coin} — stop & TP1 orders placed")
+                      f"{live['size']} {coin} — stop" + (" & TP1 orders placed" if not live.get("tp_error") else
+                      f" placed, ⚠️ TP1 order REJECTED ({live['tp_error']}) — set TP1 by hand or let stop/24h exit"))
         else:
             footer = "(Paper trade logged — no order placed)"
 
