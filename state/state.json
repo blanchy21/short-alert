@@ -1,7 +1,9 @@
 {
   "date": "2026-11-07",
   "alerted_today": [],
-  "near_misses_today": {},
+  "near_misses_today": {
+    "LIT": "53, score 53"
+  },
   "paper_pnl_today": 0.86,
   "last_tally_date": "2026-11-06",
   "open": [],
