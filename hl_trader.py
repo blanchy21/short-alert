@@ -89,10 +89,11 @@ class Trader:
         us = self.info.user_state(self.address)
         upnl = sum(float(p["position"].get("unrealizedPnl") or 0) for p in us["assetPositions"])
         if self.unified():
-            # Collateral is the spot USDC balance (it already includes margin held for open perps)
+            # Collateral is the spot USDC balance. It already includes open perps' unrealised P&L,
+            # so take gains back out (losses stay in).
             usdc = sum(float(b["total"]) for b in self.info.spot_user_state(self.address)["balances"]
                        if b["coin"] == "USDC")
-            return usdc + min(0.0, upnl)
+            return usdc - max(0.0, upnl)
         return float(us["marginSummary"]["accountValue"]) - max(0.0, upnl)
 
     def open_coins(self) -> set:
