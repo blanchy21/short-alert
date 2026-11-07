@@ -164,6 +164,19 @@ def trade_risk(t: dict) -> float:
     return t.get("risk_usd", LEGACY_RISK_USD)
 
 
+# ---------------------------------------------------------------- market data
+def fetch_market(tries: int = 4):
+    """Hyperliquid sometimes returns an empty reply for a moment; retry before giving up."""
+    for i in range(tries):
+        try:
+            return fetch_meta_and_contexts()
+        except Exception as e:
+            if i == tries - 1:
+                raise
+            print(f"Market data fetch failed ({type(e).__name__}), retrying in {5 * (i + 1)}s")
+            time.sleep(5 * (i + 1))
+
+
 # ---------------------------------------------------------------- BTC filter
 def btc_filter() -> dict:
     candles = fetch_candles("BTC", "4h", 80)
@@ -391,7 +404,7 @@ def main() -> None:
     today = local_now.strftime("%Y-%m-%d")
     roll_day(state, today)
 
-    universe, ctxs = fetch_meta_and_contexts()
+    universe, ctxs = fetch_market()
     marks, candidates, max_lev = {}, [], {}
     for meta, ctx in zip(universe, ctxs):
         if meta.get("isDelisted"):
