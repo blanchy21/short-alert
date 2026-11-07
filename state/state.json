@@ -1,19 +1,8 @@
 {
-  "date": "2026-11-06",
-  "alerted_today": [
-    "USUAL",
-    "W",
-    "ZEC"
-  ],
-  "near_misses_today": {
-    "W": "65, funding -0.0117%/h too negative",
-    "USUAL": "45, score 45",
-    "MEGA": "46, score 46",
-    "RSR": "46, score 46",
-    "kPEPE": "46, score 46",
-    "ZEC": "46, score 46"
-  },
-  "paper_pnl_today": -0.05,
+  "date": "2026-11-07",
+  "alerted_today": [],
+  "near_misses_today": {},
+  "paper_pnl_today": 0.0,
   "last_tally_date": "2026-11-06",
   "open": [
     {
@@ -96,7 +85,7 @@
       "exit_time": "2026-11-06T17:40:39.932809+00:00"
     }
   ],
-  "day_start_pot": 52.8,
+  "day_start_pot": 56.06,
   "warned_today": {
     "connection": "2026-11-06"
   }
