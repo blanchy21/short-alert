@@ -1,13 +1,34 @@
 {
   "date": "2026-11-07",
-  "alerted_today": [],
+  "alerted_today": [
+    "MET"
+  ],
   "near_misses_today": {
     "LIT": "53, score 53",
     "MET": "50, score 50"
   },
   "paper_pnl_today": 0.86,
   "last_tally_date": "2026-11-06",
-  "open": [],
+  "open": [
+    {
+      "coin": "MET",
+      "score": 63,
+      "entry": 0.29372,
+      "stop": 0.30156,
+      "tp1": 0.28905,
+      "tp2": 0.28369,
+      "stop0": 0.30156,
+      "entry_ms": 1794049845847,
+      "entry_time": "2026-11-07T11:10:45.847990+00:00",
+      "change_24h": 6.35,
+      "risk_usd": 1.11,
+      "notional": 41.41,
+      "leverage": 3,
+      "live": true,
+      "size": 141.0,
+      "network": "mainnet"
+    }
+  ],
   "closed": [
     {
       "coin": "USUAL",
