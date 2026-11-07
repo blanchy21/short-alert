@@ -7,28 +7,9 @@
     "LIT": "53, score 53",
     "MET": "50, score 50"
   },
-  "paper_pnl_today": 0.86,
+  "paper_pnl_today": -0.35,
   "last_tally_date": "2026-11-06",
-  "open": [
-    {
-      "coin": "MET",
-      "score": 63,
-      "entry": 0.29372,
-      "stop": 0.30156,
-      "tp1": 0.28905,
-      "tp2": 0.28369,
-      "stop0": 0.30156,
-      "entry_ms": 1794049845847,
-      "entry_time": "2026-11-07T11:10:45.847990+00:00",
-      "change_24h": 6.35,
-      "risk_usd": 1.11,
-      "notional": 41.41,
-      "leverage": 3,
-      "live": true,
-      "size": 141.0,
-      "network": "mainnet"
-    }
-  ],
+  "open": [],
   "closed": [
     {
       "coin": "USUAL",
@@ -111,6 +92,29 @@
       "r": 0.34,
       "pnl_usd": 0.86,
       "exit_time": "2026-11-07T02:01:02.329135+00:00"
+    },
+    {
+      "coin": "MET",
+      "score": 63,
+      "entry": 0.29372,
+      "stop": 0.30156,
+      "tp1": 0.28905,
+      "tp2": 0.28369,
+      "stop0": 0.30156,
+      "entry_ms": 1794049845847,
+      "entry_time": "2026-11-07T11:10:45.847990+00:00",
+      "change_24h": 6.35,
+      "risk_usd": 1.11,
+      "notional": 41.41,
+      "leverage": 3,
+      "live": true,
+      "size": 141.0,
+      "network": "mainnet",
+      "exit": 0.30204,
+      "exit_reason": "STOP",
+      "r": -1.09,
+      "pnl_usd": -1.21,
+      "exit_time": "2026-11-07T13:05:34.476049+00:00"
     }
   ],
   "day_start_pot": 55.4,
