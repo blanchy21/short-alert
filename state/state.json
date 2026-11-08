@@ -15,7 +15,7 @@
       "coin": "MERL",
       "score": 65,
       "entry": 0.031311,
-      "stop": 0.032301,
+      "stop": 0.03128,
       "tp1": 0.031283,
       "tp2": 0.030917,
       "stop0": 0.032301,
@@ -27,7 +27,8 @@
       "leverage": 3,
       "live": true,
       "size": 1297.0,
-      "network": "mainnet"
+      "network": "mainnet",
+      "tp1_hit": true
     }
   ],
   "closed": [
