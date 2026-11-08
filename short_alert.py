@@ -59,6 +59,8 @@ DAILY_LOSS_PCT = 20.0         # daily stop: 20% of the day-start pot
 MAX_TP_PCT = 20.0             # take profit no further than 20% below entry
 TP1_CLOSE_FRACTION = 0.5      # take half at TP1, the rest at TP2
 BREAKEVEN_PCT = 0.1           # after TP1, stop moves to 0.1% below entry (covers both fees)
+BREAKEVEN_MARGIN_PCT = 0.3    # ...but only once price is at least 0.3% below that level (else it fires at once)
+MIN_TP1_R = 0.75              # TP1 at least 0.75x the stop distance below entry; closer supports are skipped
 EXCLUDED_COINS = {"BTC", "ETH"}
 MIN_FUNDING = -0.0002         # hourly rate (-0.02%/h); skip if more negative (shorts paying heavily)
 PAPER_START_POT = 58.0        # paper mode's starting pot (USD)
@@ -200,11 +202,13 @@ def trade_levels(candles: list) -> dict:
     stop = min(stop, entry * (1 + MAX_STOP_PCT / 100))
 
     sr = get_all_sr_levels(candles)
-    strong = [s for s in sr.get("supports", []) if s["strength"] >= 2 and s["price"] < entry]
+    # Supports closer than MIN_TP1_R x the stop distance are skipped: a TP1 next to entry earns less than fees
+    min_tp1 = entry - MIN_TP1_R * (stop - entry)
+    strong = [s for s in sr.get("supports", []) if s["strength"] >= 2 and s["price"] <= min_tp1]
     if strong:
         tp1, tp1_src = strong[0]["price"], strong[0]["type"]
     else:
-        tp1, tp1_src = (entry - 2 * atr if atr else entry * 0.97), "2x ATR"
+        tp1, tp1_src = min(entry - 2 * atr if atr else entry * 0.97, min_tp1), "2x ATR"
     if tp1 < entry * (1 - MAX_TP_PCT / 100):
         tp1, tp1_src = entry * (1 - MAX_TP_PCT / 100), f"-{MAX_TP_PCT:.0f}% cap"
     # TP2: next strong support below TP1 (at least 0.5% further), else twice TP1's distance
@@ -239,13 +243,23 @@ def breakeven_px(t: dict) -> float:
     return t["entry"] * (1 - BREAKEVEN_PCT / 100)
 
 
+def stop_moved(t: dict) -> bool:
+    """True once the stop has been moved to break-even."""
+    return t["stop"] < t.get("stop0", t["stop"])
+
+
+def breakeven_ready(t: dict, price) -> bool:
+    """Break-even stop can go in: price is clearly below it, so the buy-stop won't fire straight away."""
+    return price is not None and price < breakeven_px(t) * (1 - BREAKEVEN_MARGIN_PCT / 100)
+
+
 def classify_exit(t: dict, last_px: float) -> str:
     """Name the exit from where the final fill happened."""
     if t.get("tp2") and last_px <= t["tp2"] * 1.005:
         return "TP1 + TP2"
     if t.get("tp1_hit"):
         if last_px >= t["stop"] * 0.995:
-            return "TP1 + break-even stop"
+            return "TP1 + break-even stop" if stop_moved(t) else "TP1 + STOP"
         return "TP1 + CLOSED"
     if last_px >= t["stop"] * 0.995:
         return "STOP"
@@ -259,13 +273,22 @@ def manage_live_trade(t: dict, trader, marks: dict, now_ms: int):
     coin = t["coin"]
     pos = abs(trader.position(coin))
     if pos > 0:
-        # TP1 filled (position shrank): move the stop to break-even for the rest
+        # TP1 filled (position shrank): move the stop to break-even for the rest, once price is below it.
+        # If price has bounced above break-even, a stop there would fire at once: keep the original stop for now.
+        msg = None
         if t.get("tp2") and not t.get("tp1_hit") and pos < t["size"] * 0.75:
+            t["tp1_hit"] = True
+            msg = f"🎯 LIVE TP1 hit {coin} — {fmt(t['size'] - pos)} closed at ~{fmt(t['tp1'])}\n"
+            if not breakeven_ready(t, marks.get(coin)):
+                msg += (f"Price {fmt(marks.get(coin, 0))} is above break-even {fmt(breakeven_px(t))}: "
+                        f"keeping stop {fmt(t['stop'])} until it drops back | TP2 {fmt(t['tp2'])}")
+        if t.get("tp1_hit") and t.get("tp2") and not stop_moved(t) and breakeven_ready(t, marks.get(coin)):
             new_stop = trader.move_stop(coin, breakeven_px(t), t["tp2"])
-            t.update(tp1_hit=True, stop=new_stop)
-            return "open", (f"🎯 LIVE TP1 hit {coin} — {fmt(t['size'] - pos)} closed at ~{fmt(t['tp1'])}\n"
-                            f"Stop moved to break-even {fmt(new_stop)} for the other {fmt(pos)} | "
-                            f"TP2 {fmt(t['tp2'])}")
+            t["stop"] = new_stop
+            msg = (msg or f"🎯 LIVE {coin}: price back below break-even\n") + (
+                f"Stop moved to break-even {fmt(new_stop)} for the other {fmt(pos)} | TP2 {fmt(t['tp2'])}")
+        if msg:
+            return "open", msg
         if now_ms - t["entry_ms"] < MAX_HOLD_HOURS * HOUR_MS:
             return "open", None
         trader.close(coin)
@@ -285,24 +308,30 @@ def paper_path(t: dict, candles: list, mark, now_ms: int) -> dict:
     stop0 = t.get("stop0", t["stop"])
     f = TP1_CLOSE_FRACTION if t.get("tp2") else 1.0
     tp1_hit, stop = False, stop0
-    bars = [(float(c["h"]), float(c["l"])) for c in (candles if isinstance(candles, list) else [])
+    bars = [(float(c["h"]), float(c["l"]), float(c["c"])) for c in (candles if isinstance(candles, list) else [])
             if int(c["t"]) > t["entry_ms"]]  # candles that opened before entry are pre-trade
     if mark is not None:
-        bars.append((mark, mark))
-    for h, l in bars:
+        bars.append((mark, mark, mark))
+    for h, l, c in bars:
         if not tp1_hit:
             if h >= stop:
                 return {"tp1_hit": False, "stop": stop, "exit": stop, "reason": "STOP"}
             if l <= t["tp1"]:
                 if f >= 1.0:
                     return {"tp1_hit": True, "stop": stop, "exit": t["tp1"], "reason": "TP1"}
-                tp1_hit, stop = True, breakeven_px(t)
+                tp1_hit = True
+                if breakeven_ready(t, c):
+                    stop = breakeven_px(t)
                 continue  # rest is judged from the next bar
         else:
             if h >= stop:
-                return {"tp1_hit": True, "stop": stop, "exit": stop, "reason": "TP1 + break-even stop"}
+                moved = stop < stop0
+                return {"tp1_hit": True, "stop": stop, "exit": stop,
+                        "reason": "TP1 + break-even stop" if moved else "TP1 + STOP"}
             if l <= t["tp2"]:
                 return {"tp1_hit": True, "stop": stop, "exit": t["tp2"], "reason": "TP1 + TP2"}
+            if stop >= stop0 and breakeven_ready(t, c):
+                stop = breakeven_px(t)
     if now_ms - t["entry_ms"] >= MAX_HOLD_HOURS * HOUR_MS and mark is not None:
         return {"tp1_hit": tp1_hit, "stop": stop, "exit": mark,
                 "reason": "24h TIME EXIT" + (" (after TP1)" if tp1_hit else "")}
@@ -359,11 +388,15 @@ def update_open_trades(state: dict, marks: dict, trader) -> list:
         candles = fetch_candles(t["coin"], "1h", MAX_HOLD_HOURS + 2)
         time.sleep(0.08)
         res = paper_path(t, candles, marks.get(t["coin"]), now_ms)
-        if res["tp1_hit"] and not t.get("tp1_hit") and t.get("tp2"):
+        if res["tp1_hit"] and t.get("tp2"):
+            first, moved_now = not t.get("tp1_hit"), res["stop"] < t["stop"]
             t.update(tp1_hit=True, stop=res["stop"])
-            if res["exit"] is None:
-                msgs.append(f"🎯 PAPER TP1 hit {t['coin']} — half closed at {fmt(t['tp1'])}\n"
-                            f"Stop moved to break-even {fmt(res['stop'])} | TP2 {fmt(t['tp2'])}")
+            if res["exit"] is None and (first or moved_now):
+                head = f"🎯 PAPER TP1 hit {t['coin']} — half closed at {fmt(t['tp1'])}\n" if first else \
+                       f"🎯 PAPER {t['coin']}: price back below break-even\n"
+                tail = (f"Stop moved to break-even {fmt(res['stop'])}" if moved_now else
+                        f"Price above break-even: keeping stop {fmt(res['stop'])} until it drops back")
+                msgs.append(f"{head}{tail} | TP2 {fmt(t['tp2'])}")
         if res["exit"] is None:
             still_open.append(t)
             continue

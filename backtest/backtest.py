@@ -48,9 +48,11 @@ FEE_ROUND_TRIP = 0.0009      # 0.045% taker in and out
 # ---------------------------------------------------------------- variants
 # Each variant changes one thing from the live rules ("baseline").
 BASE = dict(min_score=sa.MIN_SCORE, min_drop=abs(sa.MAX_DROP_FROM_PEAK), min_hours=sa.MIN_HOURS_SINCE_PEAK,
-            below_ema9=False, no_retest_h=0, stop_peak_buffer=None, min_tp1_r=0.0)
+            below_ema9=False, no_retest_h=0, stop_peak_buffer=None, min_tp1_r=0.0,
+            tp1_floor_r=sa.MIN_TP1_R, be_guard=True)
 VARIANTS = {
     "baseline (live rules)":         {},
+    "old exits (before 8 Nov fix)":  dict(tp1_floor_r=0.0, be_guard=False),
     "drop >= 3% from peak":          dict(min_drop=3.0),
     "drop >= 5% from peak":          dict(min_drop=5.0),
     "close below 1h EMA9":           dict(below_ema9=True),
@@ -119,7 +121,7 @@ def setup_at(win, v, key):
     """Live entry rules on a 168-candle window ending now. Returns trade levels or None."""
     closes = [float(c["c"]) for c in win]
     if key not in MEMO:
-        MEMO[key] = [score_short_readiness(win, 0.0), None]
+        MEMO[key] = [score_short_readiness(win, 0.0), {}]
     sd = MEMO[key][0]
     if sd["bounce_risk"] == "CRITICAL" or sd["score"] < v["min_score"]:
         return None
@@ -129,9 +131,12 @@ def setup_at(win, v, key):
         return None
     if v["no_retest_h"] and max(float(c["h"]) for c in win[-v["no_retest_h"]:]) >= sd["peak_price"] * 0.99:
         return None
-    if MEMO[key][1] is None:
-        MEMO[key][1] = sa.trade_levels(win)
-    lv = dict(MEMO[key][1])
+    lk = ("lv", v["tp1_floor_r"])
+    if lk not in MEMO[key][1]:
+        saved, sa.MIN_TP1_R = sa.MIN_TP1_R, v["tp1_floor_r"]
+        MEMO[key][1][lk] = sa.trade_levels(win)
+        sa.MIN_TP1_R = saved
+    lv = dict(MEMO[key][1][lk])
     if lv["tp1"] >= lv["entry"]:
         return None
     if v["stop_peak_buffer"] is not None:
@@ -142,27 +147,33 @@ def setup_at(win, v, key):
     return {**lv, "score": sd["score"], "drop": sd["drop_from_peak"], "hours_since_peak": sd["hours_since_peak"]}
 
 
-def follow(t, after):
-    """Same path as live paper mode: stop first in each candle, half at TP1, stop to break-even, rest at TP2."""
+def follow(t, after, be_guard=True):
+    """Same path as live paper mode: stop first in each candle, half at TP1, rest at TP2. After TP1 the
+    stop moves to break-even once a candle closes clearly below it (be_guard=False: straight away, the old rule)."""
     entry, stop0, tp1, tp2 = t["entry"], t["stop"], t["tp1"], t["tp2"]
     be = entry * (1 - sa.BREAKEVEN_PCT / 100)
+    ready = lambda px: (not be_guard) or px < be * (1 - sa.BREAKEVEN_MARGIN_PCT / 100)
     f = sa.TP1_CLOSE_FRACTION
     tp1_hit, stop, exit_px, reason, held = False, stop0, None, None, 0
     for c in after[:sa.MAX_HOLD_HOURS]:
         held += 1
-        h, lo = float(c["h"]), float(c["l"])
+        h, lo, cl = float(c["h"]), float(c["l"]), float(c["c"])
         if h >= stop:
-            exit_px, reason = stop, ("TP1 + break-even" if tp1_hit else "STOP")
+            exit_px, reason = stop, (("TP1 + break-even" if stop < stop0 else "TP1 + STOP") if tp1_hit else "STOP")
             break
         if not tp1_hit and lo <= tp1:
-            tp1_hit, stop = True, be
+            tp1_hit = True
             if lo <= tp2:   # both targets inside one candle
                 exit_px, reason = tp2, "TP1 + TP2"
                 break
+            if ready(cl):
+                stop = be
             continue
         if tp1_hit and lo <= tp2:
             exit_px, reason = tp2, "TP1 + TP2"
             break
+        if tp1_hit and stop >= stop0 and ready(cl):
+            stop = be
     if exit_px is None:
         if len(after) < sa.MAX_HOLD_HOURS:
             return None  # still open at the end of the data
@@ -239,7 +250,7 @@ def main():
             s = setup_at(cs[i - WINDOW + 1:i + 1], v, (coin, i))
             if not s:
                 continue
-            out = follow(s, cs[i + 1:])
+            out = follow(s, cs[i + 1:], v["be_guard"])
             if not out:
                 continue
             traded.add((coin, day))
@@ -304,13 +315,14 @@ def write_report(results, days, n_coins, start_ms, end_ms):
                      f"{sum(t['r'] for t in trades if t['entry_time'] < mid):+.1f} | "
                      f"{sum(t['r'] for t in trades if t['entry_time'] >= mid):+.1f} |")
     lines += ["", "## How trades ended", "", "| Rules | " + " | ".join(
-        ["STOP", "TP1 + break-even", "TP1 + TP2", "24h exit"]) + " |", "|---|---|---|---|---|"]
+        ["STOP", "TP1 + STOP", "TP1 + break-even", "TP1 + TP2", "24h exit"]) + " |", "|---|---|---|---|---|---|"]
     for name, trades in results.items():
         s = stats(trades)
         if s:
             rs = s["reasons"]
             lines.append(f"| {name} | " + " | ".join(str(rs.get(k, 0)) for k in
-                                                     ["STOP", "TP1 + break-even", "TP1 + TP2", "24h exit"]) + " |")
+                                                     ["STOP", "TP1 + STOP", "TP1 + break-even", "TP1 + TP2",
+                                                      "24h exit"]) + " |")
     with open(os.path.join(HERE, "results.md"), "w") as f:
         f.write("\n".join(lines) + "\n")
     print("\n".join(lines))

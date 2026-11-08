@@ -7,7 +7,7 @@ Hourly moon-dump short alerts for Hyperliquid, sent to Telegram. Paper mode by d
   - score 55+, not in the Day 2 bounce zone
   - rolled over = peak at least 1h ago and price at least 1% below it
   - no new shorts while BTC is above a rising 4h EMA21
-  - stop 1.5× ATR (max 10%), TP1 at nearest strong support (else 2× ATR)
+  - stop 1.5× ATR (max 10%), TP1 at the nearest strong support at least 0.75× the stop distance away (else 2× ATR)
   - one alert per coin per day, 24h max hold; half off at TP1, stop to break-even, rest at TP2
   - sizing and caps matched to Grokbot's Short Seller (see below)
 - `state/state.json` — the paper-trade log (open, closed, near-misses). Committed back after each run.
@@ -87,11 +87,12 @@ In live mode each alert:
 1. opens a market short at that size
 2. places a reduce-only **stop-loss** for the whole position straight away
    (if the stop is rejected, the position is closed immediately)
-3. places two reduce-only take-profits: **half at TP1** (nearest strong support) and
+3. places two reduce-only take-profits: **half at TP1** (nearest strong support at least 0.75× the stop distance below entry) and
    **half at TP2** (next strong support below, else twice TP1's distance; max −20%).
    Trades too small to split (either half under $10) use one TP1 for the whole position.
-4. once TP1 fills, the next scan moves the stop to **break-even** (0.1% below entry, covering fees)
-   for the other half, keeping TP2 in place
+4. once TP1 fills, the stop on the other half moves to **break-even** (0.1% below entry, covering fees),
+   keeping TP2 in place. It moves only once price is at least 0.3% below that level; if price has bounced
+   above it, the original stop stays until price drops back (otherwise the stop would fire at once)
 5. closes whatever is left after 24h; real P&L (after fees) goes into the tally
 
 Paper trades follow the same TP1 / break-even / TP2 path.

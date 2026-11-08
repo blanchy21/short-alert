@@ -5,6 +5,26 @@ them on a week of trades rather than one loss. First review: **Saturday 14 Novem
 
 ## Losing trades
 
+### MERL — 8 Nov, live, −$0.09 (−0.07R): right call, nothing earned
+- **Entry** 21:40 UTC at 0.031311, score 65, +5.4% in 24h, 4.6% off a peak 1h earlier. Stop 0.032301 (+3.2%).
+- **TP1 was 0.031283, only 0.09% below entry** (Fib 23.6%), smaller than the 0.09% round-trip fees. A
+  normal wiggle filled half the position within seconds, for about $0.02.
+- **The break-even stop fired at once.** The 21:45 scan moved the stop to 0.03128 (0.1% below entry), but price
+  had bounced to about 0.0314, *above* that level. A buy-stop below the market triggers immediately, so the other
+  half closed at about 0.0314, a small loss after fees.
+- **Then MERL did what we expected:** it fell to 0.03004 by 21:55, 4% below entry. TP2 (0.030917) would have
+  filled within 10 minutes, for about +$0.24. The short was right; the exits threw it away.
+- **Two faults to fix:**
+  1. **TP1 can sit almost on top of entry.** Nothing sets a minimum distance. The backtest found the same
+     problem: TP1 averages only about 0.6R.
+  2. **The break-even stop can be placed below the market** when price has bounced after TP1. It then fires
+     straight away. This is an execution bug rather than a strategy choice. The backtest models the same effect.
+- **Fixed on 8 Nov** (at Paul's request, ahead of the review): TP1 must now be at least 0.75R below entry,
+  and the break-even stop only goes in once price is 0.3% below it. With the new rule MERL's TP1 would have
+  been 0.030291 (−3.3%), which it reached. In the 120-day backtest the change moved the total from −12.9R to
+  **+5.4R** (first half +15.7R, second half −10.3R). It wins less often (50% against 61%), but wins are bigger.
+  The worst losing run is still −25.2R.
+
 ### MET — 7 Nov, live, −$1.21 (−1.09R)
 - **Entry** 11:10 UTC at 0.29372, score 63, +6.3% in 24h, bounce risk LOW. BTC below its 4h EMA.
 - **Stop** 0.30156 (+2.7%, 1.5× ATR). The morning high was 0.30028, so the stop sat only **0.4% above it**.
@@ -46,6 +66,7 @@ strategy loss.)
 | 6 Nov | W | live | 55 | TP1 | +0.58 | +$1.03 |
 | 6 Nov | ZEC | live | 58 | TP1 + break-even | +0.34 | +$0.86 |
 | 7 Nov | MET | live | 63 | Stop | −1.09 | −$1.21 |
+| 8 Nov | MERL | live | 65 | TP1 + break-even | −0.07 | −$0.09 |
 
 ## Backtest (run 8 Nov 2026): 120 days, 177 coins
 
