@@ -1,6 +1,8 @@
 {
   "date": "2026-11-08",
-  "alerted_today": [],
+  "alerted_today": [
+    "MERL"
+  ],
   "near_misses_today": {
     "MET": "46, score 46",
     "RSR": "53, score 53",
@@ -8,7 +10,26 @@
   },
   "paper_pnl_today": 0.0,
   "last_tally_date": "2026-11-08",
-  "open": [],
+  "open": [
+    {
+      "coin": "MERL",
+      "score": 65,
+      "entry": 0.031311,
+      "stop": 0.032301,
+      "tp1": 0.031283,
+      "tp2": 0.030917,
+      "stop0": 0.032301,
+      "entry_ms": 1794174052458,
+      "entry_time": "2026-11-08T21:40:52.458306+00:00",
+      "change_24h": 5.43,
+      "risk_usd": 1.28,
+      "notional": 40.61,
+      "leverage": 3,
+      "live": true,
+      "size": 1297.0,
+      "network": "mainnet"
+    }
+  ],
   "closed": [
     {
       "coin": "USUAL",
