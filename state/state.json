@@ -1,13 +1,10 @@
 {
-  "date": "2026-11-07",
-  "alerted_today": [
-    "MET"
-  ],
+  "date": "2026-11-08",
+  "alerted_today": [],
   "near_misses_today": {
-    "LIT": "53, score 53",
-    "MET": "50, score 50"
+    "MET": "46, score 46"
   },
-  "paper_pnl_today": -0.35,
+  "paper_pnl_today": 0.0,
   "last_tally_date": "2026-11-07",
   "open": [],
   "closed": [
@@ -117,7 +114,7 @@
       "exit_time": "2026-11-07T13:05:34.476049+00:00"
     }
   ],
-  "day_start_pot": 55.4,
+  "day_start_pot": 54.2,
   "warned_today": {
     "connection": "2026-11-06"
   }
