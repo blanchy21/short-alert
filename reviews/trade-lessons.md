@@ -46,3 +46,35 @@ strategy loss.)
 | 6 Nov | W | live | 55 | TP1 | +0.58 | +$1.03 |
 | 6 Nov | ZEC | live | 58 | TP1 + break-even | +0.34 | +$0.86 |
 | 7 Nov | MET | live | 63 | Stop | −1.09 | −$1.21 |
+
+## Backtest (run 8 Nov 2026): 120 days, 177 coins
+
+Full table: [backtest/results.md](../backtest/results.md). Every trade: `backtest/trades.csv`. Rerun with
+`python backtest/backtest.py` (read-only; it places no orders).
+
+**The live rules lost money over the 120 days:** 173 trades, 61% won, average −0.07R, total −12.9R after fees.
+They made +12.7R from July to mid-September, then lost −25.6R from mid-September to November.
+
+**Why:**
+- A win is usually smaller than a loss. TP1 averages 2.2% from entry but the stop averages 3.8%, so TP1 is
+  worth only about 0.6R. Stops average −1.03R, TP1 + break-even +0.21R, TP1 + TP2 +0.84R.
+- Many stops come early: 32 of 67 hit within 2 hours. That's the MET pattern, shorting before the pump has finished.
+
+**Tweaks tested** (total R; first half / second half):
+| Change | Trades | Total R | Halves | Worst run | Note |
+|---|---|---|---|---|---|
+| Live rules | 173 | −12.9 | +12.7 / −25.6 | −28.9R | |
+| Stop at least 2% above the peak | 168 | −3.6 | +11.6 / −15.3 | −21.9R | stops fall from 39% to 28% |
+| Drop ≥ 3% from peak + stop 2% above peak | 76 | −2.3 | +0.7 / −3.0 | −5.5R | steadiest, 76% won |
+| Skip if TP1 < 0.75R | 67 | +2.3 | +12.1 / −9.8 | −12.2R | only plus total, still lost in half 2 |
+| Stop 2% above peak + TP1 ≥ 0.75R | 44 | +2.4 | +6.0 / −3.6 | −8.3R | |
+| Score 60+ | 112 | −14.6 | +4.3 / −18.9 | −22.1R | worse: a higher score doesn't help |
+| Score 50+ | 257 | −10.7 | +15.1 / −25.8 | −28.6R | about the same as 55 |
+
+**What it means:** no version made money in both halves, so none is a proven fix. Every change that
+helped did the same two things: **wait for a real drop (3%+) before shorting** and **put the stop
+clear of the peak (2%+)**. Those cut losing streaks a lot (−28.9R down to −5.5R). The score threshold isn't
+the problem.
+
+**Limits:** hourly candles, not every 5 minutes; when stop and target are inside one candle the
+stop counts first (only 3 trades affected); no funding history; only coins listed today.
