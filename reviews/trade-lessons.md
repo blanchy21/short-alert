@@ -19,6 +19,10 @@ them on a week of trades rather than one loss. First review: **Saturday 14 Novem
      the morning climbing back. Shorting the top of a V-shaped recovery is weaker than shorting an exhausted pump.
   3. **The score was a one-scan spike.** 48 before entry, 55 at entry, 48 five minutes later, then 38.
   4. **The stop was just above an obvious high,** as with MET.
+- **After the stop** (checked at 16:30): BIO peaked at **0.02093 at 13:55**, 0.89% above our stop and 3.2% above
+  entry. It pushed again to 0.020865 at 15:15, then turned and fell to 0.020179 by 16:25, 0.5% below entry.
+  TP1 (0.019796) hadn't been reached. A stop 2% above the 11:00 peak (0.020940) would have survived by just
+  0.00001, but it would have needed a 3.3% stop. At the same $1.43 risk, that means a position about 30% smaller.
 - **The backtest tweaks would have skipped it:** a 1.1% drop from the peak fails the "drop ≥3%" filter, and the
   stop was less than 2% above the peak.
 
