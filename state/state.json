@@ -33,7 +33,7 @@
     "FIL": "49, score 49",
     "kBONK": "46, score 46",
     "SAND": "46, score 46",
-    "SPX": "53, score 53",
+    "SPX": "60, not rolled over (3h, -1.5%)",
     "S": "49, score 49",
     "AVNT": "49, score 49",
     "APEX": "51, score 51",
@@ -395,6 +395,22 @@
       "hours_since_peak": 1,
       "drop_from_peak": -0.76,
       "old_rule_ok": false
+    },
+    {
+      "coin": "SPX",
+      "score": 60,
+      "entry": 0.36299,
+      "stop": 0.37366571428571427,
+      "stop0": 0.37366571428571427,
+      "tp1": 0.35161,
+      "tp2": 0.3473266,
+      "stop_new_rule": 0.37601280000000004,
+      "entry_ms": 1794264055210,
+      "entry_time": "2026-11-09T22:40:55.210775+00:00",
+      "change_24h": 7.05,
+      "hours_since_peak": 3,
+      "drop_from_peak": -1.53,
+      "old_rule_ok": true
     }
   ],
   "blocked_today": [
@@ -404,7 +420,8 @@
     "VVV",
     "ETHFI",
     "FARTCOIN",
-    "STABLE"
+    "STABLE",
+    "SPX"
   ],
   "blocked_closed": []
 }
