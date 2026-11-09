@@ -10,28 +10,9 @@
     "ARB": "45, score 45",
     "BIO": "48, score 48"
   },
-  "paper_pnl_today": 0.0,
+  "paper_pnl_today": -1.65,
   "last_tally_date": "2026-11-08",
-  "open": [
-    {
-      "coin": "BIO",
-      "score": 55,
-      "entry": 0.020278,
-      "stop": 0.020745,
-      "tp1": 0.019796,
-      "tp2": 0.019579,
-      "stop0": 0.020745,
-      "entry_ms": 1794229858133,
-      "entry_time": "2026-11-09T13:10:58.133662+00:00",
-      "change_24h": 5.02,
-      "risk_usd": 1.43,
-      "notional": 62.27,
-      "leverage": 3,
-      "live": true,
-      "size": 3071.0,
-      "network": "mainnet"
-    }
-  ],
+  "open": [],
   "closed": [
     {
       "coin": "USUAL",
@@ -161,6 +142,29 @@
       "r": -0.07,
       "pnl_usd": -0.09,
       "exit_time": "2026-11-08T21:50:44.455624+00:00"
+    },
+    {
+      "coin": "BIO",
+      "score": 55,
+      "entry": 0.020278,
+      "stop": 0.020745,
+      "tp1": 0.019796,
+      "tp2": 0.019579,
+      "stop0": 0.020745,
+      "entry_ms": 1794229858133,
+      "entry_time": "2026-11-09T13:10:58.133662+00:00",
+      "change_24h": 5.02,
+      "risk_usd": 1.43,
+      "notional": 62.27,
+      "leverage": 3,
+      "live": true,
+      "size": 3071.0,
+      "network": "mainnet",
+      "exit": 0.02079704298274178,
+      "exit_reason": "STOP",
+      "r": -1.15,
+      "pnl_usd": -1.65,
+      "exit_time": "2026-11-09T13:55:35.416680+00:00"
     }
   ],
   "day_start_pot": 83.04,
