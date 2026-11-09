@@ -4,7 +4,8 @@
     "BIO",
     "USUAL",
     "BOME",
-    "AVAX"
+    "AVAX",
+    "MET"
   ],
   "near_misses_today": {
     "MERL": "48, score 48",
@@ -52,6 +53,21 @@
       "risk_usd": 2.09,
       "notional": 71.15,
       "leverage": 5
+    },
+    {
+      "coin": "MET",
+      "score": 58,
+      "entry": 0.33583,
+      "stop": 0.3484032142857143,
+      "tp1": 0.32343988,
+      "tp2": 0.3163766535471784,
+      "stop0": 0.3484032142857143,
+      "entry_ms": 1794240952130,
+      "entry_time": "2026-11-09T16:15:52.130932+00:00",
+      "change_24h": 10.83,
+      "risk_usd": 1.6,
+      "notional": 42.69,
+      "leverage": 3
     }
   ],
   "closed": [
