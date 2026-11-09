@@ -73,12 +73,12 @@ And one **secret**: `HL_API_PRIVATE_KEY` — the private key of a Hyperliquid **
 (app.hyperliquid.xyz → More → API → Generate). An API wallet can trade but cannot withdraw.
 
 ### Sizing and caps (same as Grokbot's Short Seller)
-The **pot** is the live account value, with unrealised gains ignored and losses counted
+The **pot** is the live account value, with each open position's unrealised gain ignored and losses counted (on every Hyperliquid market, HIP-3 ones like xyz included)
 (paper mode starts from `PAPER_START_POT` = $58), so trades grow only as the account grows.
 - risk up to **10% of the pot** per trade (the loss if the stop hits)
 - each short uses at most **25% of the pot as margin** — in practice this limits most trades to less than 10% risk
 - up to **5× isolated**, stepped down so liquidation sits at least 1.5× the stop distance away
-- at most **3 open shorts** (positions opened elsewhere on the account count too)
+- at most **3 open shorts** (positions opened elsewhere on the account count too, including HIP-3 markets such as xyz:NVDA)
 - all open shorts at their stops + today's realised losses ≤ **20% of the day-start pot**; trades are shrunk or skipped to fit
 - **daily stop** at a 20% loss of the day-start pot — nothing new until the next Dublin day
 - BTC and ETH excluded; funding below −0.02%/h skipped

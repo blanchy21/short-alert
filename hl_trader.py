@@ -84,21 +84,44 @@ class Trader:
         except Exception:
             return False
 
+    def _dexes(self) -> list:
+        """Names of Hyperliquid's extra perp markets (HIP-3, e.g. "xyz", "io"); the main market is ""."""
+        if not hasattr(self, "_dex_names"):
+            try:
+                self._dex_names = [d["name"] for d in self.info.post("/info", {"type": "perpDexs"}) if d]
+            except Exception:
+                self._dex_names = []
+        return self._dex_names
+
+    def all_positions(self) -> list:
+        """Open positions on every perp market: the main one plus HIP-3 markets (e.g. xyz:NVDA)."""
+        out = []
+        for dex in [""] + self._dexes():
+            try:
+                st = self.info.post("/info", {"type": "clearinghouseState", "user": self.address, "dex": dex})
+            except Exception:
+                if dex == "":
+                    raise
+                continue  # one extra market not answering shouldn't stop the scan
+            out += [p["position"] for p in st.get("assetPositions", []) if float(p["position"]["szi"]) != 0]
+        return out
+
     def pot(self) -> float:
-        """Account value with unrealised gains ignored and unrealised losses counted."""
-        us = self.info.user_state(self.address)
-        upnl = sum(float(p["position"].get("unrealizedPnl") or 0) for p in us["assetPositions"])
+        """Account value with unrealised gains ignored and unrealised losses counted (per position)."""
         if self.unified():
-            # Collateral is the spot USDC balance. It already includes open perps' unrealised P&L,
-            # so take gains back out (losses stay in).
+            # Collateral is the spot USDC balance. It already includes the unrealised P&L of open positions
+            # on every perp market (main and HIP-3), so take each position's gain back out; losses stay in.
+            gains = sum(max(0.0, float(p.get("unrealizedPnl") or 0)) for p in self.all_positions())
             usdc = sum(float(b["total"]) for b in self.info.spot_user_state(self.address)["balances"]
                        if b["coin"] == "USDC")
-            return usdc - max(0.0, upnl)
-        return float(us["marginSummary"]["accountValue"]) - max(0.0, upnl)
+            return usdc - gains
+        us = self.info.user_state(self.address)
+        gains = sum(max(0.0, float(p["position"].get("unrealizedPnl") or 0)) for p in us["assetPositions"])
+        return float(us["marginSummary"]["accountValue"]) - gains
 
     def open_coins(self) -> set:
-        return {p["position"]["coin"] for p in self.info.user_state(self.address)["assetPositions"]
-                if float(p["position"]["szi"]) != 0}
+        """Coins with an open position on any perp market (HIP-3 ones keep their prefix, e.g. "xyz:NVDA")."""
+        return {p["coin"] for p in self.all_positions()}
 
     def position(self, coin: str) -> float:
         """Signed size (negative = short); 0 if flat."""
