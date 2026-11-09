@@ -22,25 +22,9 @@
     "ETHFI": "58, not rolled over (0h, -0.7%)",
     "PYTH": "53, score 53"
   },
-  "paper_pnl_today": -1.87,
+  "paper_pnl_today": 0.45,
   "last_tally_date": "2026-11-08",
   "open": [
-    {
-      "coin": "AVAX",
-      "score": 75,
-      "entry": 8.9132,
-      "stop": 8.9042868,
-      "tp1": 8.712601600000001,
-      "tp2": 8.5316492,
-      "stop0": 9.175592857142856,
-      "entry_ms": 1794240645144,
-      "entry_time": "2026-11-09T16:10:45.144591+00:00",
-      "change_24h": 9.02,
-      "risk_usd": 2.09,
-      "notional": 71.15,
-      "leverage": 5,
-      "tp1_hit": true
-    },
     {
       "coin": "MET",
       "score": 58,
@@ -253,6 +237,27 @@
       "r": 1.33,
       "pnl_usd": 1.38,
       "exit_time": "2026-11-09T18:26:23.376682+00:00"
+    },
+    {
+      "coin": "AVAX",
+      "score": 75,
+      "entry": 8.9132,
+      "stop": 8.9042868,
+      "tp1": 8.712601600000001,
+      "tp2": 8.5316492,
+      "stop0": 9.175592857142856,
+      "entry_ms": 1794240645144,
+      "entry_time": "2026-11-09T16:10:45.144591+00:00",
+      "change_24h": 9.02,
+      "risk_usd": 2.09,
+      "notional": 71.15,
+      "leverage": 5,
+      "tp1_hit": true,
+      "exit": 8.5316492,
+      "exit_reason": "TP1 + TP2",
+      "r": 1.11,
+      "pnl_usd": 2.32,
+      "exit_time": "2026-11-09T19:15:38.871521+00:00"
     }
   ],
   "day_start_pot": 83.04,
