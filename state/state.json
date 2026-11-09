@@ -2,7 +2,8 @@
   "date": "2026-11-09",
   "alerted_today": [
     "BIO",
-    "USUAL"
+    "USUAL",
+    "BOME"
   ],
   "near_misses_today": {
     "MERL": "48, score 48",
@@ -19,7 +20,23 @@
   },
   "paper_pnl_today": -3.25,
   "last_tally_date": "2026-11-08",
-  "open": [],
+  "open": [
+    {
+      "coin": "BOME",
+      "score": 60,
+      "entry": 0.000641,
+      "stop": 0.000656642857142857,
+      "tp1": 0.000624482,
+      "tp2": 0.000615914,
+      "stop0": 0.000656642857142857,
+      "entry_ms": 1794240339117,
+      "entry_time": "2026-11-09T16:05:39.117300+00:00",
+      "change_24h": 6.13,
+      "risk_usd": 1.04,
+      "notional": 42.69,
+      "leverage": 3
+    }
+  ],
   "closed": [
     {
       "coin": "USUAL",
