@@ -48,25 +48,24 @@ FEE_ROUND_TRIP = 0.0009      # 0.045% taker in and out
 # ---------------------------------------------------------------- variants
 # Each variant changes one thing from the live rules ("baseline").
 BASE = dict(min_score=sa.MIN_SCORE, min_drop=abs(sa.MAX_DROP_FROM_PEAK), min_hours=sa.MIN_HOURS_SINCE_PEAK,
-            below_ema9=False, no_retest_h=0, stop_peak_buffer=None, min_tp1_r=0.0,
+            below_ema9=False, no_retest_h=0, stop_peak_buffer=sa.STOP_ABOVE_PEAK_PCT, min_tp1_r=0.0,
             tp1_floor_r=sa.MIN_TP1_R, be_guard=True)
 VARIANTS = {
     "baseline (live rules)":         {},
-    "old exits (before 8 Nov fix)":  dict(tp1_floor_r=0.0, be_guard=False),
-    "drop >= 3% from peak":          dict(min_drop=3.0),
+    "rules 8-9 Nov (1% drop, ATR stop)": dict(min_drop=1.0, stop_peak_buffer=None),
+    "rules before 8 Nov fix":        dict(min_drop=1.0, stop_peak_buffer=None, tp1_floor_r=0.0, be_guard=False),
+    "drop >= 1% (stop 2% above peak)": dict(min_drop=1.0),
     "drop >= 5% from peak":          dict(min_drop=5.0),
     "close below 1h EMA9":           dict(below_ema9=True),
     "no peak retest in last 3h":     dict(no_retest_h=3),
     "stop >= 1% above peak":         dict(stop_peak_buffer=1.0),
-    "stop >= 2% above peak":         dict(stop_peak_buffer=2.0),
+    "ATR stop only (no peak floor)": dict(stop_peak_buffer=None),
     "score 50+":                     dict(min_score=50),
     "score 60+":                     dict(min_score=60),
-    "drop >= 3% + stop 1% above peak": dict(min_drop=3.0, stop_peak_buffer=1.0),
-    "EMA9 + stop 1% above peak":     dict(below_ema9=True, stop_peak_buffer=1.0),
+    "EMA9 + stop 1% above peak":     dict(min_drop=1.0, below_ema9=True, stop_peak_buffer=1.0),
     "skip if TP1 < 0.75R":           dict(min_tp1_r=0.75),
     "skip if TP1 < 1R":              dict(min_tp1_r=1.0),
-    "drop >= 3% + stop 2% above peak": dict(min_drop=3.0, stop_peak_buffer=2.0),
-    "stop 2% above peak + TP1 >= 0.75R": dict(stop_peak_buffer=2.0, min_tp1_r=0.75),
+    "stop 2% above peak + TP1 >= 0.75R": dict(min_drop=1.0, min_tp1_r=0.75),
 }
 MEMO = {}  # (coin, i) -> (score data, levels): the same for every variant
 
@@ -142,6 +141,7 @@ def setup_at(win, v, key):
     if v["stop_peak_buffer"] is not None:
         floor = sd["peak_price"] * (1 + v["stop_peak_buffer"] / 100)
         lv["stop"] = min(max(lv["stop"], floor), lv["entry"] * (1 + sa.MAX_STOP_PCT / 100))
+        lv["risk_pct"] = (lv["stop"] - lv["entry"]) / lv["entry"] * 100
     if v["min_tp1_r"] and (lv["entry"] - lv["tp1"]) < v["min_tp1_r"] * (lv["stop"] - lv["entry"]):
         return None
     return {**lv, "score": sd["score"], "drop": sd["drop_from_peak"], "hours_since_peak": sd["hours_since_peak"]}

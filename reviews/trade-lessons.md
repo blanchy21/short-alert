@@ -70,6 +70,14 @@ them on a week of trades rather than one loss. First review: **Saturday 14 Novem
 (The live W safety-net close on 6 Nov, −$0.17, was an order-format bug, fixed the same day. It wasn't a
 strategy loss.)
 
+## Rule change on 9 Nov (brought forward at Paul's request)
+Three of four losers (W, MET, BIO) were shorted while the pump was still running, with the stop just above the
+peak. From 9 Nov the bot needs **price at least 3% below the peak** (was 1%) and puts the **stop at least 2% above
+the peak** (on top of 1.5× ATR, still capped at 10%). Over 120 days this scored **70 trades, 64% won, +6.2R, worst
+run −6.0R** (against 157 trades, +5.4R, worst run −25.2R before). It trades about half as often, and the second
+half was flat (−0.2R), so it isn't proven. Judge it at the 14 Nov review. Live trading was paused at the time (Paul's
+manual AMD long), so the first trades under it come once live is switched back on.
+
 ## Patterns to check at the review
 - Losers (W, MET, BIO) were all shorted **while the coin was still pushing up**. Do winners show a deeper drop from the peak,
   or a clear lower high, before entry?

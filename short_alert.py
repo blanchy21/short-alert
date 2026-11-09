@@ -4,9 +4,9 @@ Short Alert - hourly moon-dump short alerts for Hyperliquid (paper mode).
 
 Uses moon_dump_monitor.py's scoring unchanged, plus the Short Seller rules:
   - score 55+ and NOT in the Day 2 bounce zone (peak > 24h ago)
-  - "rolled over": peak at least 1h ago AND price at least 1% below the peak
+  - "rolled over": peak at least 1h ago AND price at least 3% below the peak
   - BTC filter: no new shorts while BTC is above a rising 4h EMA21
-  - stop = 1.5x ATR above entry, capped at 10%; TP1 no further than -20%
+  - stop = 1.5x ATR above entry, but at least 2% above the peak; capped at 10%; TP1 no further than -20%
   - one alert per coin per day, max hold 24h
   - Grokbot sizing: risk up to 10% of the pot, margin <= 25% of the pot, <= 5x isolated,
     max 3 open shorts, total open risk + today's losses <= 20% of the day-start pot,
@@ -44,9 +44,10 @@ from moon_dump_monitor import (
 MIN_SCORE = 55
 NEAR_MISS_SCORE = 45          # 45-54 gets logged as a near-miss
 MIN_HOURS_SINCE_PEAK = 1
-MAX_DROP_FROM_PEAK = -1.0     # price must be at least 1% below the peak
+MAX_DROP_FROM_PEAK = -3.0     # price must be at least 3% below the peak (was 1% until 9 Nov 2026)
 STOP_ATR_MULT = 1.5
 MAX_STOP_PCT = 10.0
+STOP_ABOVE_PEAK_PCT = 2.0     # stop at least 2% above the pump peak (added 9 Nov 2026)
 MAX_HOLD_HOURS = 24
 # Sizing and caps - matched to Grokbot's Short Seller
 RISK_PCT_OF_POT = 10.0        # risk up to 10% of the pot per trade (loss if the stop hits)
@@ -195,7 +196,7 @@ def btc_filter() -> dict:
 
 
 # ---------------------------------------------------------------- trade levels
-def trade_levels(candles: list) -> dict:
+def trade_levels(candles: list, peak_price: float | None = None) -> dict:
     entry = float(candles[-1]["c"])
     atr = calc_atr(candles)
     stop = entry + STOP_ATR_MULT * atr if atr else entry * 1.02
@@ -219,6 +220,10 @@ def trade_levels(candles: list) -> dict:
         tp2, tp2_src = entry - 2 * (entry - tp1), "2x TP1 distance"
     if tp2 < entry * (1 - MAX_TP_PCT / 100):
         tp2, tp2_src = entry * (1 - MAX_TP_PCT / 100), f"-{MAX_TP_PCT:.0f}% cap"
+    # Stop clear of the pump peak: retests of a fresh high often wick just past it (W, MET, BIO).
+    # Applied after the targets are chosen, as in the backtest that tested it.
+    if peak_price and STOP_ABOVE_PEAK_PCT:
+        stop = min(max(stop, peak_price * (1 + STOP_ABOVE_PEAK_PCT / 100)), entry * (1 + MAX_STOP_PCT / 100))
     resist = sr.get("resistances", [])
     return {
         "entry": entry, "stop": stop, "tp1": tp1, "tp1_src": tp1_src,
@@ -545,7 +550,7 @@ def main() -> None:
                 state["near_misses_today"].setdefault(coin, f"{score}, {block}")
             continue
 
-        lv = trade_levels(candles)
+        lv = trade_levels(candles, sd.get("peak_price"))
         if lv["tp1"] >= lv["entry"]:
             continue
 
