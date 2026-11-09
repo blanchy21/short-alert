@@ -28,7 +28,7 @@
       "coin": "BOME",
       "score": 60,
       "entry": 0.000641,
-      "stop": 0.000656642857142857,
+      "stop": 0.000640359,
       "tp1": 0.000624482,
       "tp2": 0.000615914,
       "stop0": 0.000656642857142857,
@@ -37,7 +37,8 @@
       "change_24h": 6.13,
       "risk_usd": 1.04,
       "notional": 42.69,
-      "leverage": 3
+      "leverage": 3,
+      "tp1_hit": true
     },
     {
       "coin": "AVAX",
