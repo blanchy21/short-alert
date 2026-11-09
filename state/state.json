@@ -22,7 +22,8 @@
     "ETHFI": "58, not rolled over (0h, -0.7%)",
     "PYTH": "53, score 53",
     "VVV": "51, score 51",
-    "XTEN": "55, not rolled over (5h, -2.0%)"
+    "XTEN": "55, not rolled over (5h, -2.0%)",
+    "USELESS": "48, score 48"
   },
   "paper_pnl_today": 0.45,
   "last_tally_date": "2026-11-08",
