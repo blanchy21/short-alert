@@ -3,7 +3,8 @@
   "alerted_today": [],
   "near_misses_today": {
     "MERL": "48, score 48",
-    "STABLE": "45, score 45"
+    "STABLE": "45, score 45",
+    "RSR": "46, score 46"
   },
   "paper_pnl_today": 0.0,
   "last_tally_date": "2026-11-08",
