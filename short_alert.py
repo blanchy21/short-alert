@@ -61,6 +61,7 @@ MAX_TP_PCT = 20.0             # take profit no further than 20% below entry
 TP1_CLOSE_FRACTION = 0.5      # take half at TP1, the rest at TP2
 BREAKEVEN_PCT = 0.1           # after TP1, stop moves to 0.1% below entry (covers both fees)
 BREAKEVEN_MARGIN_PCT = 0.3    # ...but only once price is at least 0.3% below that level (else it fires at once)
+OLD_MAX_DROP_FROM_PEAK = -1.0 # the rule before 9 Nov 2026; used only to label blocked setups in the log
 MIN_TP1_R = 0.75              # TP1 at least 0.75x the stop distance below entry; closer supports are skipped
 EXCLUDED_COINS = {"BTC", "ETH"}
 MIN_FUNDING = -0.0002         # hourly rate (-0.02%/h); skip if more negative (shorts paying heavily)
@@ -126,6 +127,7 @@ def load_state() -> dict:
 def save_state(state: dict) -> None:
     os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
     state["closed"] = state["closed"][-500:]
+    state["blocked_closed"] = state.get("blocked_closed", [])[-500:]
     with open(STATE_FILE, "w") as f:
         json.dump(state, f, indent=2)
 
@@ -135,8 +137,20 @@ def roll_day(state: dict, today: str) -> None:
         state["date"] = today
         state["alerted_today"] = []
         state["near_misses_today"] = {}
+        state["blocked_today"] = []
         state["paper_pnl_today"] = 0.0
         state["day_start_pot"] = None
+
+
+def note_near_miss(state: dict, coin: str, score: int, why: str) -> None:
+    """Keep each coin's highest score of the day (and the reason it didn't trade at that score)."""
+    old = state["near_misses_today"].get(coin)
+    try:
+        old_score = int(str(old).split(",")[0]) if old else -1
+    except ValueError:
+        old_score = -1
+    if score > old_score:
+        state["near_misses_today"][coin] = f"{score}, {why}"
 
 
 # ---------------------------------------------------------------- sizing
@@ -411,6 +425,57 @@ def update_open_trades(state: dict, marks: dict, trader) -> list:
     return msgs
 
 
+# ---------------------------------------------------------------- blocked setups (log only)
+def log_blocked(state: dict, coin: str, score: int, chg: float, sd: dict, candles: list) -> None:
+    """A setup that scored enough but wasn't rolled over: record what the trade would have been.
+    Log only - no order, no alert, no effect on the pot or limits. For the review of the 3% rule."""
+    state.setdefault("blocked_today", [])
+    if coin in state["blocked_today"]:
+        return
+    lv = trade_levels(candles)                         # levels under the rules before 9 Nov
+    if lv["tp1"] >= lv["entry"]:
+        return
+    new_stop = trade_levels(candles, sd.get("peak_price"))["stop"]
+    state["blocked_today"].append(coin)
+    state.setdefault("blocked_open", []).append({
+        "coin": coin, "score": score, "entry": lv["entry"], "stop": lv["stop"], "stop0": lv["stop"],
+        "tp1": lv["tp1"], "tp2": lv.get("tp2"), "stop_new_rule": new_stop,
+        "entry_ms": int(time.time() * 1000), "entry_time": now_utc().isoformat(), "change_24h": round(chg, 2),
+        "hours_since_peak": sd["hours_since_peak"], "drop_from_peak": round(sd["drop_from_peak"], 2),
+        # True = the rule before 9 Nov would have traded it (peak 1h+ ago, 1%+ below it)
+        "old_rule_ok": bool(sd["hours_since_peak"] >= MIN_HOURS_SINCE_PEAK
+                            and sd["drop_from_peak"] <= OLD_MAX_DROP_FROM_PEAK),
+    })
+
+
+def update_blocked(state: dict, marks: dict) -> None:
+    """Follow blocked setups like paper trades, with the old stop and with the new rule's stop."""
+    now_ms = int(time.time() * 1000)
+    still = []
+    for t in state.get("blocked_open", []):
+        candles = fetch_candles(t["coin"], "1h", MAX_HOLD_HOURS + 2)
+        time.sleep(0.08)
+        mark = marks.get(t["coin"])
+        if "r" not in t:                               # 1. with the stop the old rules would have used
+            res = paper_path(t, candles, mark, now_ms)
+            if res["exit"] is not None:
+                t.update({"exit": res["exit"], "exit_reason": res["reason"],
+                          "r": round(paper_r(t, res["exit"], res["tp1_hit"]), 2),
+                          "exit_time": now_utc().isoformat()})
+                print(f"blocked setup {t['coin']} (old stop): {t['exit_reason']} {t['r']:+.2f}R")
+        if "r_new_stop" not in t:                      # 2. the same entry with the new rule's wider stop
+            wide = {**t, "stop": t["stop_new_rule"], "stop0": t["stop_new_rule"]}
+            res_w = paper_path(wide, candles, mark, now_ms)
+            if res_w["exit"] is not None:
+                t.update({"exit_reason_new_stop": res_w["reason"],
+                          "r_new_stop": round(paper_r(wide, res_w["exit"], res_w["tp1_hit"]), 2)})
+        if "r" in t and "r_new_stop" in t:
+            state.setdefault("blocked_closed", []).append(t)
+        else:
+            still.append(t)
+    state["blocked_open"] = still
+
+
 # ---------------------------------------------------------------- daily tally
 def tally_message(state: dict) -> str:
     today = state["date"]
@@ -426,6 +491,12 @@ def tally_message(state: dict) -> str:
     if state["near_misses_today"]:
         nm = "; ".join(f"{c} ({why})" for c, why in list(state["near_misses_today"].items())[:8])
         lines.append(f"Near-misses: {nm}")
+    bc = state.get("blocked_closed", [])
+    if bc or state.get("blocked_open"):
+        would = [t for t in bc if t.get("old_rule_ok")]
+        lines.append(f"Blocked by the 3% rule (log only): {len(state.get('blocked_open', []))} being followed, "
+                     f"{len(bc)} finished; the {len(would)} the old rule would have traded: "
+                     f"{sum(t['r'] for t in would):+.2f}R")
     allc = state["closed"]
     if allc:
         w = sum(1 for t in allc if t["pnl_usd"] > 0)
@@ -483,6 +554,10 @@ def main() -> None:
             warn_once(state, m.split("\n")[0][:60], m)  # repeat problems: once a day
         else:
             send_telegram(m)
+    try:
+        update_blocked(state, marks)   # log only: setups the rolled-over rule blocked
+    except Exception as e:
+        print(f"Couldn't update blocked setups: {e}")
 
     # 2. Pot, caps and market filter
     pot = None
@@ -547,7 +622,14 @@ def main() -> None:
 
         if block:
             if score >= NEAR_MISS_SCORE and block != "already alerted/open today":
-                state["near_misses_today"].setdefault(coin, f"{score}, {block}")
+                note_near_miss(state, coin, score, block)
+            # Scored enough and only the rolled-over rule stopped it: log what the trade would have been
+            if (block.startswith("not rolled over") and not btc["blocks"] and cand["funding"] >= MIN_FUNDING
+                    and coin not in state["alerted_today"] and coin not in open_coins):
+                try:
+                    log_blocked(state, coin, score, chg, sd, candles)
+                except Exception as e:
+                    print(f"         -> couldn't log blocked setup: {e}")
             continue
 
         lv = trade_levels(candles, sd.get("peak_price"))
@@ -559,7 +641,7 @@ def main() -> None:
                         pick_leverage(lv["risk_pct"], max_lev.get(coin)))
         if "block" in sz:
             print(f"         -> skipped: {sz['block']}")
-            state["near_misses_today"].setdefault(coin, f"{score}, {sz['block']}")
+            note_near_miss(state, coin, score, sz["block"])
             continue
 
         live = None

@@ -88,6 +88,16 @@ run −6.0R** (against 157 trades, +5.4R, worst run −25.2R before). It trades 
 half was flat (−0.2R), so it isn't proven. Judge it at the 14 Nov review. Live trading was paused at the time (Paul's
 manual AMD long), so the first trades under it come once live is switched back on.
 
+## Blocked-setup log (from 9 Nov evening, log only)
+To judge the 3% rule, the bot now records every setup that scored 55+ and was stopped only by the rolled-over
+rule. It places no order, sends no alert, and doesn't touch the pot or limits. Each one is followed like a paper
+trade, twice: with the stop the old rules would have used (`r`) and with the new rule's wider stop (`r_new_stop`).
+`old_rule_ok` is true when the rules before 9 Nov would have traded it. They sit in `state/state.json` under
+`blocked_open` and `blocked_closed`, with a one-line summary in the daily tally. If the `old_rule_ok` ones add up
+to a loss, the rule saved money; if they add up to a gain, it cost money.
+
+The near-miss log now keeps each coin's **highest** score of the day (it used to keep the first).
+
 ## Patterns to check at the review
 - Losers (W, MET, BIO, USUAL) were all shorted **while the coin was still pushing up**. Do winners show a deeper drop from the peak,
   or a clear lower high, before entry?
