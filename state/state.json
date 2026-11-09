@@ -1,7 +1,8 @@
 {
   "date": "2026-11-09",
   "alerted_today": [
-    "BIO"
+    "BIO",
+    "USUAL"
   ],
   "near_misses_today": {
     "MERL": "48, score 48",
@@ -15,7 +16,26 @@
   },
   "paper_pnl_today": -1.65,
   "last_tally_date": "2026-11-08",
-  "open": [],
+  "open": [
+    {
+      "coin": "USUAL",
+      "score": 63,
+      "entry": 0.01062,
+      "stop": 0.01088,
+      "tp1": 0.01025,
+      "tp2": 0.01006,
+      "stop0": 0.01088,
+      "entry_ms": 1794236752052,
+      "entry_time": "2026-11-09T15:05:52.052340+00:00",
+      "change_24h": 6.19,
+      "risk_usd": 1.49,
+      "notional": 60.94,
+      "leverage": 3,
+      "live": true,
+      "size": 5737.8,
+      "network": "mainnet"
+    }
+  ],
   "closed": [
     {
       "coin": "USUAL",
