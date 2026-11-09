@@ -3,7 +3,8 @@
   "alerted_today": [
     "BIO",
     "USUAL",
-    "BOME"
+    "BOME",
+    "AVAX"
   ],
   "near_misses_today": {
     "MERL": "48, score 48",
@@ -16,7 +17,8 @@
     "MET": "45, score 45",
     "JUP": "50, score 50",
     "BOME": "53, score 53",
-    "MON": "65, not rolled over (1h, -0.8%)"
+    "MON": "65, not rolled over (1h, -0.8%)",
+    "ETHFI": "58, not rolled over (0h, -0.7%)"
   },
   "paper_pnl_today": -3.25,
   "last_tally_date": "2026-11-08",
@@ -35,6 +37,21 @@
       "risk_usd": 1.04,
       "notional": 42.69,
       "leverage": 3
+    },
+    {
+      "coin": "AVAX",
+      "score": 75,
+      "entry": 8.9132,
+      "stop": 9.175592857142856,
+      "tp1": 8.712601600000001,
+      "tp2": 8.5316492,
+      "stop0": 9.175592857142856,
+      "entry_ms": 1794240645144,
+      "entry_time": "2026-11-09T16:10:45.144591+00:00",
+      "change_24h": 9.02,
+      "risk_usd": 2.09,
+      "notional": 71.15,
+      "leverage": 5
     }
   ],
   "closed": [
