@@ -36,7 +36,9 @@
     "SPX": "53, score 53",
     "S": "49, score 49",
     "AVNT": "49, score 49",
-    "APEX": "51, score 51"
+    "APEX": "51, score 51",
+    "POLYX": "49, score 49",
+    "ICP": "46, score 46"
   },
   "paper_pnl_today": 0.45,
   "last_tally_date": "2026-11-09",
@@ -345,13 +347,30 @@
       "hours_since_peak": 1,
       "drop_from_peak": -1.15,
       "old_rule_ok": true
+    },
+    {
+      "coin": "ETHFI",
+      "score": 56,
+      "entry": 0.63005,
+      "stop": 0.6481571428571429,
+      "stop0": 0.6481571428571429,
+      "tp1": 0.60956872,
+      "tp2": 0.6061374789814599,
+      "stop_new_rule": 0.6484752,
+      "entry_ms": 1794261353328,
+      "entry_time": "2026-11-09T21:55:53.328648+00:00",
+      "change_24h": 10.92,
+      "hours_since_peak": 2,
+      "drop_from_peak": -0.9,
+      "old_rule_ok": false
     }
   ],
   "blocked_today": [
     "PYTH",
     "JUP",
     "XTEN",
-    "VVV"
+    "VVV",
+    "ETHFI"
   ],
   "blocked_closed": []
 }
