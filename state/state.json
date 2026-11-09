@@ -24,8 +24,10 @@
     "VVV": "59, not rolled over (1h, -1.1%)",
     "XTEN": "55, not rolled over (5h, -2.0%)",
     "USELESS": "51, score 51",
-    "COMP": "46, score 46",
-    "RUNE": "46, score 46"
+    "COMP": "51, score 51",
+    "RUNE": "46, score 46",
+    "FARTCOIN": "46, score 46",
+    "INIT": "50, score 50"
   },
   "paper_pnl_today": 0.45,
   "last_tally_date": "2026-11-09",
