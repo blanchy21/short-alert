@@ -21,25 +21,9 @@
     "MON": "65, not rolled over (1h, -0.8%)",
     "ETHFI": "58, not rolled over (0h, -0.7%)"
   },
-  "paper_pnl_today": -3.25,
+  "paper_pnl_today": -1.87,
   "last_tally_date": "2026-11-08",
   "open": [
-    {
-      "coin": "BOME",
-      "score": 60,
-      "entry": 0.000641,
-      "stop": 0.000640359,
-      "tp1": 0.000624482,
-      "tp2": 0.000615914,
-      "stop0": 0.000656642857142857,
-      "entry_ms": 1794240339117,
-      "entry_time": "2026-11-09T16:05:39.117300+00:00",
-      "change_24h": 6.13,
-      "risk_usd": 1.04,
-      "notional": 42.69,
-      "leverage": 3,
-      "tp1_hit": true
-    },
     {
       "coin": "AVAX",
       "score": 75,
@@ -247,6 +231,27 @@
       "r": -1.07,
       "pnl_usd": -1.6,
       "exit_time": "2026-11-09T15:35:33.197863+00:00"
+    },
+    {
+      "coin": "BOME",
+      "score": 60,
+      "entry": 0.000641,
+      "stop": 0.000640359,
+      "tp1": 0.000624482,
+      "tp2": 0.000615914,
+      "stop0": 0.000656642857142857,
+      "entry_ms": 1794240339117,
+      "entry_time": "2026-11-09T16:05:39.117300+00:00",
+      "change_24h": 6.13,
+      "risk_usd": 1.04,
+      "notional": 42.69,
+      "leverage": 3,
+      "tp1_hit": true,
+      "exit": 0.000615914,
+      "exit_reason": "TP1 + TP2",
+      "r": 1.33,
+      "pnl_usd": 1.38,
+      "exit_time": "2026-11-09T18:26:23.376682+00:00"
     }
   ],
   "day_start_pot": 83.04,
