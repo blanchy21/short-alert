@@ -15,15 +15,15 @@
     "BIO": "48, score 48",
     "AVAX": "50, score 50",
     "USUAL": "45, score 45",
-    "MET": "45, score 45",
-    "JUP": "50, score 50",
+    "MET": "49, score 49",
+    "JUP": "61, not rolled over (1h, -1.6%)",
     "BOME": "53, score 53",
     "MON": "65, not rolled over (1h, -0.8%)",
     "ETHFI": "58, not rolled over (0h, -0.7%)",
-    "PYTH": "53, score 53",
-    "VVV": "51, score 51",
+    "PYTH": "68, not rolled over (0h, -0.9%)",
+    "VVV": "53, score 53",
     "XTEN": "55, not rolled over (5h, -2.0%)",
-    "USELESS": "48, score 48"
+    "USELESS": "51, score 51"
   },
   "paper_pnl_today": 0.45,
   "last_tally_date": "2026-11-08",
@@ -266,5 +266,61 @@
   "day_start_pot": 100.22,
   "warned_today": {
     "connection": "2026-11-06"
-  }
+  },
+  "blocked_open": [
+    {
+      "coin": "PYTH",
+      "score": 68,
+      "entry": 0.065994,
+      "stop": 0.06793435714285714,
+      "stop0": 0.06793435714285714,
+      "tp1": 0.0638989,
+      "tp2": 0.063185,
+      "stop_new_rule": 0.06793435714285714,
+      "entry_ms": 1794256538777,
+      "entry_time": "2026-11-09T20:35:38.777655+00:00",
+      "change_24h": 6.22,
+      "hours_since_peak": 0,
+      "drop_from_peak": -0.89,
+      "old_rule_ok": false
+    },
+    {
+      "coin": "JUP",
+      "score": 61,
+      "entry": 0.25419,
+      "stop": 0.26119928571428574,
+      "stop0": 0.26119928571428574,
+      "tp1": 0.24569748,
+      "tp2": 0.24181999999999998,
+      "stop_new_rule": 0.263415,
+      "entry_ms": 1794256539171,
+      "entry_time": "2026-11-09T20:35:39.171416+00:00",
+      "change_24h": 6.92,
+      "hours_since_peak": 1,
+      "drop_from_peak": -1.57,
+      "old_rule_ok": true
+    },
+    {
+      "coin": "XTEN",
+      "score": 55,
+      "entry": 0.24481,
+      "stop": 0.25310607142857144,
+      "stop0": 0.25310607142857144,
+      "tp1": 0.23579250000000002,
+      "tp2": 0.23180250000000002,
+      "stop_new_rule": 0.2554794,
+      "entry_ms": 1794256545180,
+      "entry_time": "2026-11-09T20:35:45.180332+00:00",
+      "change_24h": 5.74,
+      "hours_since_peak": 5,
+      "drop_from_peak": -2.26,
+      "old_rule_ok": true
+    }
+  ],
+  "blocked_today": [
+    "PYTH",
+    "JUP",
+    "XTEN"
+  ],
+  "blocked_closed": []
 }
