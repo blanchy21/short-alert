@@ -9,7 +9,7 @@
   ],
   "near_misses_today": {
     "MERL": "48, score 48",
-    "STABLE": "48, score 48",
+    "STABLE": "55, not rolled over (1h, -0.8%)",
     "RSR": "46, score 46",
     "ARB": "45, score 45",
     "BIO": "48, score 48",
@@ -21,14 +21,14 @@
     "MON": "65, not rolled over (1h, -0.8%)",
     "ETHFI": "58, not rolled over (0h, -0.7%)",
     "PYTH": "70, not rolled over (0h, -1.2%)",
-    "VVV": "59, not rolled over (1h, -1.1%)",
+    "VVV": "65, not rolled over (1h, -0.3%)",
     "XTEN": "55, not rolled over (5h, -2.0%)",
     "USELESS": "51, score 51",
     "COMP": "51, score 51",
     "RUNE": "49, score 49",
-    "FARTCOIN": "49, score 49",
+    "FARTCOIN": "61, not rolled over (3h, -1.7%)",
     "INIT": "50, score 50",
-    "ATOM": "51, score 51",
+    "ATOM": "53, score 53",
     "AAVE": "46, score 46",
     "FIL": "49, score 49",
     "kBONK": "46, score 46",
@@ -363,6 +363,38 @@
       "hours_since_peak": 2,
       "drop_from_peak": -0.9,
       "old_rule_ok": false
+    },
+    {
+      "coin": "FARTCOIN",
+      "score": 61,
+      "entry": 0.11847,
+      "stop": 0.12111000000000001,
+      "stop0": 0.12111000000000001,
+      "tp1": 0.11624,
+      "tp2": 0.11557,
+      "stop_new_rule": 0.122961,
+      "entry_ms": 1794261682740,
+      "entry_time": "2026-11-09T22:01:22.740465+00:00",
+      "change_24h": 5.63,
+      "hours_since_peak": 3,
+      "drop_from_peak": -1.73,
+      "old_rule_ok": true
+    },
+    {
+      "coin": "STABLE",
+      "score": 55,
+      "entry": 0.028808,
+      "stop": 0.029423214285714285,
+      "stop0": 0.029423214285714285,
+      "tp1": 0.02814822065708871,
+      "tp2": 0.027999568,
+      "stop_new_rule": 0.02960958,
+      "entry_ms": 1794261689602,
+      "entry_time": "2026-11-09T22:01:29.602202+00:00",
+      "change_24h": 9.69,
+      "hours_since_peak": 1,
+      "drop_from_peak": -0.76,
+      "old_rule_ok": false
     }
   ],
   "blocked_today": [
@@ -370,7 +402,9 @@
     "JUP",
     "XTEN",
     "VVV",
-    "ETHFI"
+    "ETHFI",
+    "FARTCOIN",
+    "STABLE"
   ],
   "blocked_closed": []
 }
