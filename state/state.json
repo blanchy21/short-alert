@@ -1,14 +1,8 @@
 {
-  "date": "2026-11-08",
-  "alerted_today": [
-    "MERL"
-  ],
-  "near_misses_today": {
-    "MET": "46, score 46",
-    "RSR": "53, score 53",
-    "MERL": "50, score 50"
-  },
-  "paper_pnl_today": -0.09,
+  "date": "2026-11-09",
+  "alerted_today": [],
+  "near_misses_today": {},
+  "paper_pnl_today": 0.0,
   "last_tally_date": "2026-11-08",
   "open": [],
   "closed": [
@@ -142,7 +136,7 @@
       "exit_time": "2026-11-08T21:50:44.455624+00:00"
     }
   ],
-  "day_start_pot": 54.2,
+  "day_start_pot": 65.47,
   "warned_today": {
     "connection": "2026-11-06"
   }
