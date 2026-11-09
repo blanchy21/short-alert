@@ -5,6 +5,23 @@ them on a week of trades rather than one loss. First review: **Saturday 14 Novem
 
 ## Losing trades
 
+### BIO — 9 Nov, live, −$1.65 (−1.15R)
+- **Entry** 13:10 UTC at 0.020278, score 55 (just at the bar), +5.0% in 24h, bounce risk LOW, BTC below 4h EMA.
+  Reasons: RSI 80.8, StochRSI bearish cross at 95/98, price at the upper Bollinger band, a red candle after 3 green.
+- **Stop** 0.020745 (+2.3%, 1.5× ATR). The peak was 0.020529 at 11:00, so the stop sat only **1.05% above it**.
+- **What happened:** price never went our way. The 13:00 candle pushed through the 11:00 high to 0.020829. The
+  stop triggered at 13:51 and filled at about 0.020797, 0.25% worse than the trigger.
+- **Why it lost:**
+  1. **Not rolled over, again.** It was only 1.1% off a peak 2h old, the minimum our rule allows. The 11:00
+     candle was a heavy-volume wick (about 53k against 2–5k normal) and 12:00 made a lower high, but price was
+     still holding near the top, not falling.
+  2. **The "+5%" was a recovery, not a pump.** BIO flushed −5% at 21:00 on 8 Nov (about 40k volume) and spent
+     the morning climbing back. Shorting the top of a V-shaped recovery is weaker than shorting an exhausted pump.
+  3. **The score was a one-scan spike.** 48 before entry, 55 at entry, 48 five minutes later, then 38.
+  4. **The stop was just above an obvious high,** as with MET.
+- **The backtest tweaks would have skipped it:** a 1.1% drop from the peak fails the "drop ≥3%" filter, and the
+  stop was less than 2% above the peak.
+
 ### MERL — 8 Nov, live, −$0.09 (−0.07R): right call, nothing earned
 - **Entry** 21:40 UTC at 0.031311, score 65, +5.4% in 24h, 4.6% off a peak 1h earlier. Stop 0.032301 (+3.2%).
 - **TP1 was 0.031283, only 0.09% below entry** (Fib 23.6%), smaller than the 0.09% round-trip fees. A
@@ -50,7 +67,7 @@ them on a week of trades rather than one loss. First review: **Saturday 14 Novem
 strategy loss.)
 
 ## Patterns to check at the review
-- Losers were both shorted **while the coin was still pushing up**. Do winners show a deeper drop from the peak,
+- Losers (W, MET, BIO) were all shorted **while the coin was still pushing up**. Do winners show a deeper drop from the peak,
   or a clear lower high, before entry?
 - **Stop distance above the recent high:** compare winners and losers. Is 0.4% too tight?
 - **Score at entry versus the score on the scans before and after:** do one-off spikes lose more often?
@@ -67,6 +84,7 @@ strategy loss.)
 | 6 Nov | ZEC | live | 58 | TP1 + break-even | +0.34 | +$0.86 |
 | 7 Nov | MET | live | 63 | Stop | −1.09 | −$1.21 |
 | 8 Nov | MERL | live | 65 | TP1 + break-even | −0.07 | −$0.09 |
+| 9 Nov | BIO | live | 55 | Stop | −1.15 | −$1.65 |
 
 ## Backtest (run 8 Nov 2026): 120 days, 177 coins
 
