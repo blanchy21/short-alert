@@ -43,7 +43,7 @@
       "coin": "AVAX",
       "score": 75,
       "entry": 8.9132,
-      "stop": 9.175592857142856,
+      "stop": 8.9042868,
       "tp1": 8.712601600000001,
       "tp2": 8.5316492,
       "stop0": 9.175592857142856,
@@ -52,7 +52,8 @@
       "change_24h": 9.02,
       "risk_usd": 2.09,
       "notional": 71.15,
-      "leverage": 5
+      "leverage": 5,
+      "tp1_hit": true
     },
     {
       "coin": "MET",
