@@ -5,6 +5,16 @@ them on a week of trades rather than one loss. First review: **Saturday 14 Novem
 
 ## Losing trades
 
+### USUAL — 9 Nov, live, −$1.60 (−1.07R)
+- **Entry** 15:05 UTC at 0.01062, score 63, +6.2% in 24h. It was the last live trade before Paul paused live
+  trading at 15:37.
+- **Stop** 0.01088. The peak was 0.01083 (14:00 candle), so price was only **1.9% off the peak** and the stop sat
+  just **0.46% above it**.
+- **What happened:** the 15:00 candle ran on to 0.01097 on heavy volume (about 100k against 5–10k overnight) and
+  took the stop at 15:35, filled at 0.01089. At 17:00 it was 0.01076, still above our entry: no reversal yet.
+- **Why it lost:** the same pattern as W, MET and BIO. The pump was still running, and the stop sat just above
+  the high. **The 9 Nov rule would have skipped it** (it was 1.9% off the peak, under the new 3% minimum).
+
 ### BIO — 9 Nov, live, −$1.65 (−1.15R)
 - **Entry** 13:10 UTC at 0.020278, score 55 (just at the bar), +5.0% in 24h, bounce risk LOW, BTC below 4h EMA.
   Reasons: RSI 80.8, StochRSI bearish cross at 95/98, price at the upper Bollinger band, a red candle after 3 green.
@@ -71,7 +81,7 @@ them on a week of trades rather than one loss. First review: **Saturday 14 Novem
 strategy loss.)
 
 ## Rule change on 9 Nov (brought forward at Paul's request)
-Three of four losers (W, MET, BIO) were shorted while the pump was still running, with the stop just above the
+Four of five losers (W, MET, BIO, USUAL) were shorted while the pump was still running, with the stop just above the
 peak. From 9 Nov the bot needs **price at least 3% below the peak** (was 1%) and puts the **stop at least 2% above
 the peak** (on top of 1.5× ATR, still capped at 10%). Over 120 days this scored **70 trades, 64% won, +6.2R, worst
 run −6.0R** (against 157 trades, +5.4R, worst run −25.2R before). It trades about half as often, and the second
@@ -79,7 +89,7 @@ half was flat (−0.2R), so it isn't proven. Judge it at the 14 Nov review. Live
 manual AMD long), so the first trades under it come once live is switched back on.
 
 ## Patterns to check at the review
-- Losers (W, MET, BIO) were all shorted **while the coin was still pushing up**. Do winners show a deeper drop from the peak,
+- Losers (W, MET, BIO, USUAL) were all shorted **while the coin was still pushing up**. Do winners show a deeper drop from the peak,
   or a clear lower high, before entry?
 - **Stop distance above the recent high:** compare winners and losers. Is 0.4% too tight?
 - **Score at entry versus the score on the scans before and after:** do one-off spikes lose more often?
@@ -97,6 +107,7 @@ manual AMD long), so the first trades under it come once live is switched back o
 | 7 Nov | MET | live | 63 | Stop | −1.09 | −$1.21 |
 | 8 Nov | MERL | live | 65 | TP1 + break-even | −0.07 | −$0.09 |
 | 9 Nov | BIO | live | 55 | Stop | −1.15 | −$1.65 |
+| 9 Nov | USUAL | live | 63 | Stop | −1.07 | −$1.60 |
 
 ## Backtest (run 8 Nov 2026): 120 days, 177 coins
 
