@@ -354,22 +354,6 @@
       "old_rule_ok": true
     },
     {
-      "coin": "SPX",
-      "score": 60,
-      "entry": 0.36299,
-      "stop": 0.37366571428571427,
-      "stop0": 0.37366571428571427,
-      "tp1": 0.35161,
-      "tp2": 0.3473266,
-      "stop_new_rule": 0.37601280000000004,
-      "entry_ms": 1794264055210,
-      "entry_time": "2026-11-09T22:40:55.210775+00:00",
-      "change_24h": 7.05,
-      "hours_since_peak": 3,
-      "drop_from_peak": -1.53,
-      "old_rule_ok": true
-    },
-    {
       "coin": "JUP",
       "score": 58,
       "entry": 0.25286,
@@ -451,6 +435,28 @@
       "exit_time": "2026-11-10T00:35:37.169316+00:00",
       "exit_reason_new_stop": "STOP",
       "r_new_stop": -1.0
+    },
+    {
+      "coin": "SPX",
+      "score": 60,
+      "entry": 0.36299,
+      "stop": 0.37366571428571427,
+      "stop0": 0.37366571428571427,
+      "tp1": 0.35161,
+      "tp2": 0.3473266,
+      "stop_new_rule": 0.37601280000000004,
+      "entry_ms": 1794264055210,
+      "entry_time": "2026-11-09T22:40:55.210775+00:00",
+      "change_24h": 7.05,
+      "hours_since_peak": 3,
+      "drop_from_peak": -1.53,
+      "old_rule_ok": true,
+      "exit": 0.36262700999999997,
+      "exit_reason": "TP1 + break-even stop",
+      "r": 0.55,
+      "exit_time": "2026-11-10T07:25:36.207101+00:00",
+      "exit_reason_new_stop": "TP1 + break-even stop",
+      "r_new_stop": 0.45
     }
   ]
 }
