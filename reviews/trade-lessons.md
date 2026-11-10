@@ -1,6 +1,6 @@
 # Trade lessons
 
-A note on every losing trade: what happened and why. **Rules stay unchanged until the weekly review**, so we judge
+A note on every trade, winners and losers: what happened and why. **Rules stay unchanged until the weekly review**, so we judge
 them on a week of trades rather than one loss. First review: **Saturday 14 November 2026** (covering 6–13 Nov).
 
 ## Losing trades
@@ -80,6 +80,39 @@ them on a week of trades rather than one loss. First review: **Saturday 14 Novem
 (The live W safety-net close on 6 Nov, −$0.17, was an order-format bug, fixed the same day. It wasn't a
 strategy loss.)
 
+## Winning trades
+Winners get a note too, so the review can see what a good setup looks like, not only what a bad one does.
+
+### BOME, AVAX, MET — 9 Nov, paper (live paused), +1.33R / +1.11R / +1.27R
+- **Entries** 16:05–16:15 UTC, scores 60 / 75 / 58, +6.1% / +9.0% / +10.8% in 24h. These were under the 8 Nov
+  rules (TP1 at least 0.75R away), just before the 3% rule went in at 16:37.
+- **All three reached TP2.** BOME and AVAX got there within 3 hours, and MET overnight. Starting stops were 2.4% /
+  2.9% / 3.7% above entry.
+- **What went right:** TP1 was far enough from entry to be worth having, and after TP1 the break-even stop sat
+  below entry, so the second half ran to TP2. This is the pattern the 8 Nov exit fix was meant to produce. Before it
+  (USUAL, W, ZEC on 6 Nov) winners closed at TP1 alone for only +0.3R to +0.6R.
+
+### Earlier winners — 6 Nov
+USUAL (paper, +0.30R), W (live, +0.58R) and ZEC (live, +0.34R) all hit TP1. W went in when the coin was +13.4%
+on the day, after the paper W short at +5.9% had been stopped. The later entry, once the pump was further along,
+won.
+
+## Orders the exchange blocked
+
+### SOPH — 10 Nov, live order rejected, logged as paper
+- **Signal** 14:15 UTC at 0.001443, score 60, +16.8% in 24h. Stop 0.001531, TP1 0.001372, TP2 0.0013325.
+- **Hyperliquid rejected the order:** "Cannot increase position when open interest is at cap." SOPH had hit the
+  exchange's limit on open positions, so nobody could add to one. The bot logged a paper trade instead.
+- **What happened next:** it dropped to 0.001387 (1.1% short of TP1), bounced to 0.00149, then fell to 0.00138 by
+  about 17:30. Funding was −0.018%/h, just inside our −0.02% limit, so the coin was crowded with shorts.
+- **Lessons:**
+  1. An open-interest cap is an exchange limit, not a strategy fault. It tends to hit the most crowded coins,
+     which are also the ones with the most squeeze risk.
+  2. Paul asked whether to enter late, at 0.00138. By the rules it was too late: the score was down to 26 and the
+     original stop was 10.9% away, against about 3.4% left to TP2.
+- **For the review:** count how often the cap blocks an entry, and whether funding close to the limit goes with
+  bigger moves against us. The bot doesn't record open interest yet.
+
 ## Rule change on 9 Nov (brought forward at Paul's request)
 Four of five losers (W, MET, BIO, USUAL) were shorted while the pump was still running, with the stop just above the
 peak. From 9 Nov the bot needs **price at least 3% below the peak** (was 1%) and puts the **stop at least 2% above
@@ -118,6 +151,10 @@ The near-miss log now keeps each coin's **highest** score of the day (it used to
 | 8 Nov | MERL | live | 65 | TP1 + break-even | −0.07 | −$0.09 |
 | 9 Nov | BIO | live | 55 | Stop | −1.15 | −$1.65 |
 | 9 Nov | USUAL | live | 63 | Stop | −1.07 | −$1.60 |
+| 9 Nov | BOME | paper | 60 | TP1 + TP2 | +1.33 | +$1.38 |
+| 9 Nov | AVAX | paper | 75 | TP1 + TP2 | +1.11 | +$2.32 |
+| 9 Nov | MET | paper | 58 | TP1 + TP2 | +1.27 | +$2.03 |
+| 10 Nov | SOPH | paper (order rejected, OI cap) | 60 | open | | |
 
 ## Backtest (run 8 Nov 2026): 120 days, 177 coins
 
