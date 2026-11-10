@@ -356,7 +356,11 @@
       "change_24h": 7.32,
       "hours_since_peak": 5,
       "drop_from_peak": -2.09,
-      "old_rule_ok": true
+      "old_rule_ok": true,
+      "exit": 0.25932071428571424,
+      "exit_reason": "STOP",
+      "r": -1.0,
+      "exit_time": "2026-11-10T15:05:52.294097+00:00"
     },
     {
       "coin": "GRAM",
