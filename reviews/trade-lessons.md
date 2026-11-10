@@ -170,7 +170,7 @@ the bug fixed 8 Nov); the 9 Nov paper trades BOME, AVAX and MET all reached TP2.
 | 9 Nov | BOME | paper | 60 | TP1 + TP2 | +1.33 | +$1.38 |
 | 9 Nov | AVAX | paper | 75 | TP1 + TP2 | +1.11 | +$2.32 |
 | 9 Nov | MET | paper | 58 | TP1 + TP2 | +1.27 | +$2.03 |
-| 10 Nov | SOPH | paper (order rejected, OI cap) | 60 | open | | |
+| 10 Nov | SOPH | paper (order rejected, OI cap) | 60 | TP1 + TP2 | +1.03 | +$3.04 |
 
 ## Backtest (run 8 Nov 2026): 120 days, 177 coins
 
