@@ -131,6 +131,22 @@ to a loss, the rule saved money; if they add up to a gain, it cost money.
 
 The near-miss log now keeps each coin's **highest** score of the day (it used to keep the first).
 
+## Break-even stop after TP1 (study, 10 Nov)
+Paul asked how many trades that hit TP1 go on to TP2, and how many get stopped at break-even. Backtest, current
+rules, 120 days: 43 of 70 trades hit TP1.
+| After TP1 | Trades | Share | Average R |
+|---|---|---|---|
+| Reached TP2 | 21 | 49% | +0.88 |
+| Stopped at break-even | 14 | 33% | +0.35 |
+| Closed at 24h | 8 | 19% | +0.91 |
+
+What the 14 break-even stops did next: only **3** went on to TP2 before the original stop, **5** went on up to the
+original stop (break-even saved about 1R on each), and 6 did neither within 24h. Other stop levels after TP1, total R:
+break-even +6.2R, stop at entry +0.25R +5.1R, stop halfway (+0.5R) +7.0R, original stop kept +6.7R. Those gaps are
+within noise, and on the 8–9 Nov rules break-even came out best (+5.4R). **Verdict: keep break-even.** It doesn't cost
+much, and it stops a TP1 winner turning into a loss. Real trades so far: ZEC and MERL closed at break-even (MERL from
+the bug fixed 8 Nov); the 9 Nov paper trades BOME, AVAX and MET all reached TP2. Recheck with real trades at the review.
+
 ## Patterns to check at the review
 - Losers (W, MET, BIO, USUAL) were all shorted **while the coin was still pushing up**. Do winners show a deeper drop from the peak,
   or a clear lower high, before entry?
