@@ -111,7 +111,8 @@ won.
   2. Paul asked whether to enter late, at 0.00138. By the rules it was too late: the score was down to 26 and the
      original stop was 10.9% away, against about 3.4% left to TP2.
 - **For the review:** count how often the cap blocks an entry, and whether funding close to the limit goes with
-  bigger moves against us. The bot doesn't record open interest yet.
+  bigger moves against us. From the evening of 10 Nov the bot records funding, open interest (USD) and its 1h change
+  on every trade and blocked setup, plus `order_error` when the exchange rejects an order. Log only.
 
 ## Rule change on 9 Nov (brought forward at Paul's request)
 Four of five losers (W, MET, BIO, USUAL) were shorted while the pump was still running, with the stop just above the

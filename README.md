@@ -12,6 +12,9 @@ Hourly moon-dump short alerts for Hyperliquid, sent to Telegram. Paper mode by d
   - one alert per coin per day, 24h max hold; half off at TP1, stop to break-even, rest at TP2
   - sizing and caps matched to Grokbot's Short Seller (see below)
 - `state/state.json` — the paper-trade log (open, closed, near-misses). Committed back after each run.
+  Each trade and blocked setup also records funding, open interest in USD (`oi_usd`) and its change over
+  the last hour (`oi_chg_1h_pct`, from the bot's own snapshots in `oi_hist`). Log only, for the weekly review.
+  A live order the exchange rejects (e.g. open interest at cap) is logged as paper with `order_error`.
 - Daily tally to Telegram at 21:00 Dublin.
 
 ## Setup (about 10 minutes)

@@ -65,6 +65,7 @@ OLD_MAX_DROP_FROM_PEAK = -1.0 # the rule before 9 Nov 2026; used only to label b
 MIN_TP1_R = 0.75              # TP1 at least 0.75x the stop distance below entry; closer supports are skipped
 EXCLUDED_COINS = {"BTC", "ETH"}
 MIN_FUNDING = -0.0002         # hourly rate (-0.02%/h); skip if more negative (shorts paying heavily)
+OI_HISTORY_MS = 2 * 3_600_000 # keep 2h of open-interest snapshots per candidate coin (log only, for the review)
 PAPER_START_POT = 58.0        # paper mode's starting pot (USD)
 LEGACY_RISK_USD = 1.16        # risk of trades logged before sizing changed
 BTC_EMA_PERIOD = 21           # on 4h candles
@@ -426,7 +427,28 @@ def update_open_trades(state: dict, marks: dict, trader) -> list:
 
 
 # ---------------------------------------------------------------- blocked setups (log only)
-def log_blocked(state: dict, coin: str, score: int, chg: float, sd: dict, candles: list) -> None:
+def note_oi(state: dict, candidates: list, now_ms: int) -> None:
+    """Keep a short open-interest history for this scan's candidates and add each one's 1h change.
+    Log only: recorded on trades and blocked setups so the review can see if rising OI goes with squeezes."""
+    hist = state.setdefault("oi_hist", {})
+    names = {c["coin"] for c in candidates}
+    for coin in list(hist):
+        if coin not in names:
+            del hist[coin]
+    for c in candidates:
+        h = [x for x in hist.get(c["coin"], []) if now_ms - x[0] <= OI_HISTORY_MS]
+        old = [x for x in h if now_ms - x[0] >= 55 * 60_000]   # snapshot about 1h ago, if we have one
+        c["oi_chg_1h_pct"] = (round((c["oi"] / old[-1][1] - 1) * 100, 2)
+                              if old and old[-1][1] > 0 and c["oi"] > 0 else None)
+        h.append([now_ms, c["oi"]])
+        hist[c["coin"]] = h
+
+
+def oi_fields(cand: dict) -> dict:
+    return {"funding": cand["funding"], "oi_usd": round(cand["oi_usd"]), "oi_chg_1h_pct": cand.get("oi_chg_1h_pct")}
+
+
+def log_blocked(state: dict, coin: str, score: int, chg: float, sd: dict, candles: list, extra: dict = None) -> None:
     """A setup that scored enough but wasn't rolled over: record what the trade would have been.
     Log only - no order, no alert, no effect on the pot or limits. For the review of the 3% rule."""
     state.setdefault("blocked_today", [])
@@ -445,6 +467,7 @@ def log_blocked(state: dict, coin: str, score: int, chg: float, sd: dict, candle
         # True = the rule before 9 Nov would have traded it (peak 1h+ ago, 1%+ below it)
         "old_rule_ok": bool(sd["hours_since_peak"] >= MIN_HOURS_SINCE_PEAK
                             and sd["drop_from_peak"] <= OLD_MAX_DROP_FROM_PEAK),
+        **(extra or {}),
     })
 
 
@@ -524,6 +547,7 @@ def main() -> None:
             prev = float(ctx.get("prevDayPx") or 0)
             vol = float(ctx.get("dayNtlVlm") or 0)
             funding = float(ctx.get("funding") or 0)
+            oi = float(ctx.get("openInterest") or 0)
         except (TypeError, ValueError):
             continue
         if mark <= 0:
@@ -534,7 +558,11 @@ def main() -> None:
             continue
         # Cheap pre-filter on the exchange's 24h change; exact check on candles below
         if vol >= MIN_VOLUME_USD and prev > 0 and (mark - prev) / prev * 100 >= MIN_PUMP_PCT - 2:
-            candidates.append({"coin": coin, "funding": funding})
+            candidates.append({"coin": coin, "funding": funding, "oi": oi, "oi_usd": oi * mark})
+    try:
+        note_oi(state, candidates, int(time.time() * 1000))
+    except Exception as e:
+        print(f"Couldn't record open interest: {e}")
 
     # 0. Hyperliquid connection (live mode, or live trades still open)
     trader, trader_err = None, None
@@ -627,7 +655,7 @@ def main() -> None:
             if (block.startswith("not rolled over") and not btc["blocks"] and cand["funding"] >= MIN_FUNDING
                     and coin not in state["alerted_today"] and coin not in open_coins):
                 try:
-                    log_blocked(state, coin, score, chg, sd, candles)
+                    log_blocked(state, coin, score, chg, sd, candles, oi_fields(cand))
                 except Exception as e:
                     print(f"         -> couldn't log blocked setup: {e}")
             continue
@@ -644,7 +672,7 @@ def main() -> None:
             note_near_miss(state, coin, score, sz["block"])
             continue
 
-        live = None
+        live, order_error = None, None
         if LIVE and trader:
             try:
                 live = trader.open_short(coin, sz["notional"], sz["lev"], lv["risk_pct"], -lv["tp1_pct"],
@@ -656,6 +684,7 @@ def main() -> None:
                     lv["tp2_pct"] = (lv["tp2"] - lv["entry"]) / lv["entry"] * 100
                 sz.update(notional=live["notional"], risk_usd=live["risk_usd"])
             except Exception as e:
+                order_error = str(e)[:200]
                 send_telegram(f"⚠️ LIVE order for {coin} not placed: {e}\nLogged as a paper trade instead.")
         size_line = (f"Size ${sz['notional']:.2f} at {sz['lev']}x isolated "
                      f"(margin ${sz['notional'] / sz['lev']:.2f}) | risk ${sz['risk_usd']:.2f} "
@@ -683,7 +712,9 @@ def main() -> None:
             f"Stop {fmt(lv['stop'])} (+{lv['risk_pct']:.1f}%, 1.5x ATR)\n"
             f"{tp_lines}\n"
             f"Exit within {sd['exit_window']} — bounce risk {sd['bounce_risk']}\n"
-            f"Funding {cand['funding']*100:.4f}% | {btc['note']}\n"
+            f"Funding {cand['funding']*100:.4f}% | OI ${cand['oi_usd'] / 1e6:.2f}M"
+            + (f" ({cand['oi_chg_1h_pct']:+.1f}% 1h)" if cand.get("oi_chg_1h_pct") is not None else "")
+            + f" | {btc['note']}\n"
             f"{sigs}{res}\n"
             f"{size_line}\n"
             f"{footer}"
@@ -694,7 +725,10 @@ def main() -> None:
             "tp1": lv["tp1"], "tp2": lv.get("tp2"), "stop0": lv["stop"], "entry_ms": int(time.time() * 1000),
             "entry_time": now_utc().isoformat(), "change_24h": round(chg, 2),
             "risk_usd": sz["risk_usd"], "notional": sz["notional"], "leverage": sz["lev"],
+            **oi_fields(cand),
         }
+        if order_error:
+            trade["order_error"] = order_error
         if live:
             trade.update(live=True, size=live["size"], network=live["network"])
         state["open"].append(trade)
