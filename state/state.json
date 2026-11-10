@@ -1,46 +1,12 @@
 {
-  "date": "2026-11-09",
-  "alerted_today": [
-    "BIO",
-    "USUAL",
-    "BOME",
-    "AVAX",
-    "MET"
-  ],
+  "date": "2026-11-10",
+  "alerted_today": [],
   "near_misses_today": {
-    "MERL": "48, score 48",
-    "STABLE": "65, not rolled over (2h, -1.3%)",
-    "RSR": "46, score 46",
-    "ARB": "45, score 45",
-    "BIO": "48, score 48",
-    "AVAX": "50, score 50",
-    "USUAL": "45, score 45",
-    "MET": "49, score 49",
-    "JUP": "68, not rolled over (1h, -1.7%)",
-    "BOME": "53, score 53",
-    "MON": "65, not rolled over (1h, -0.8%)",
-    "ETHFI": "58, not rolled over (0h, -0.7%)",
-    "PYTH": "70, not rolled over (0h, -1.2%)",
-    "VVV": "65, not rolled over (1h, -0.3%)",
-    "XTEN": "55, not rolled over (5h, -2.0%)",
-    "USELESS": "51, score 51",
-    "COMP": "51, score 51",
-    "RUNE": "49, score 49",
-    "FARTCOIN": "61, not rolled over (3h, -1.7%)",
-    "INIT": "58, funding -0.2002%/h too negative",
-    "ATOM": "53, score 53",
-    "AAVE": "46, score 46",
-    "FIL": "49, score 49",
-    "kBONK": "46, score 46",
-    "SAND": "46, score 46",
-    "SPX": "60, not rolled over (3h, -1.5%)",
-    "S": "49, score 49",
-    "AVNT": "49, score 49",
-    "APEX": "51, score 51",
-    "POLYX": "49, score 49",
-    "ICP": "46, score 46"
+    "JUP": "58, not rolled over (5h, -2.1%)",
+    "INIT": "56, funding -0.2661%/h too negative",
+    "STABLE": "66, not rolled over (3h, -0.3%)"
   },
-  "paper_pnl_today": 0.45,
+  "paper_pnl_today": 0.0,
   "last_tally_date": "2026-11-09",
   "open": [
     {
@@ -279,7 +245,7 @@
       "exit_time": "2026-11-09T19:15:38.871521+00:00"
     }
   ],
-  "day_start_pot": 100.22,
+  "day_start_pot": 60.62,
   "warned_today": {
     "connection": "2026-11-06"
   },
@@ -411,17 +377,43 @@
       "hours_since_peak": 3,
       "drop_from_peak": -1.53,
       "old_rule_ok": true
+    },
+    {
+      "coin": "JUP",
+      "score": 58,
+      "entry": 0.25286,
+      "stop": 0.25932071428571424,
+      "stop0": 0.25932071428571424,
+      "tp1": 0.24693053320085137,
+      "tp2": 0.24181999999999998,
+      "stop_new_rule": 0.263415,
+      "entry_ms": 1794268868342,
+      "entry_time": "2026-11-10T00:01:08.342490+00:00",
+      "change_24h": 7.32,
+      "hours_since_peak": 5,
+      "drop_from_peak": -2.09,
+      "old_rule_ok": true
+    },
+    {
+      "coin": "STABLE",
+      "score": 66,
+      "entry": 0.028951,
+      "stop": 0.029675285714285717,
+      "stop0": 0.029675285714285717,
+      "tp1": 0.028214501710484906,
+      "tp2": 0.027999568,
+      "stop_new_rule": 0.029675285714285717,
+      "entry_ms": 1794268877945,
+      "entry_time": "2026-11-10T00:01:17.945214+00:00",
+      "change_24h": 8.1,
+      "hours_since_peak": 3,
+      "drop_from_peak": -0.27,
+      "old_rule_ok": false
     }
   ],
   "blocked_today": [
-    "PYTH",
     "JUP",
-    "XTEN",
-    "VVV",
-    "ETHFI",
-    "FARTCOIN",
-    "STABLE",
-    "SPX"
+    "STABLE"
   ],
   "blocked_closed": []
 }
