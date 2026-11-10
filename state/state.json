@@ -378,22 +378,6 @@
       "hours_since_peak": 5,
       "drop_from_peak": -2.09,
       "old_rule_ok": true
-    },
-    {
-      "coin": "STABLE",
-      "score": 66,
-      "entry": 0.028951,
-      "stop": 0.029675285714285717,
-      "stop0": 0.029675285714285717,
-      "tp1": 0.028214501710484906,
-      "tp2": 0.027999568,
-      "stop_new_rule": 0.029675285714285717,
-      "entry_ms": 1794268877945,
-      "entry_time": "2026-11-10T00:01:17.945214+00:00",
-      "change_24h": 8.1,
-      "hours_since_peak": 3,
-      "drop_from_peak": -0.27,
-      "old_rule_ok": false
     }
   ],
   "blocked_today": [
@@ -420,6 +404,28 @@
       "exit_reason": "STOP",
       "r": -1.0,
       "exit_time": "2026-11-10T00:25:34.201553+00:00",
+      "exit_reason_new_stop": "STOP",
+      "r_new_stop": -1.0
+    },
+    {
+      "coin": "STABLE",
+      "score": 66,
+      "entry": 0.028951,
+      "stop": 0.029675285714285717,
+      "stop0": 0.029675285714285717,
+      "tp1": 0.028214501710484906,
+      "tp2": 0.027999568,
+      "stop_new_rule": 0.029675285714285717,
+      "entry_ms": 1794268877945,
+      "entry_time": "2026-11-10T00:01:17.945214+00:00",
+      "change_24h": 8.1,
+      "hours_since_peak": 3,
+      "drop_from_peak": -0.27,
+      "old_rule_ok": false,
+      "exit": 0.029675285714285717,
+      "exit_reason": "STOP",
+      "r": -1.0,
+      "exit_time": "2026-11-10T00:35:37.169316+00:00",
       "exit_reason_new_stop": "STOP",
       "r_new_stop": -1.0
     }
