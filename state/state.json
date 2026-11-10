@@ -8,26 +8,9 @@
     "AVAX": "46, score 46",
     "ETHFI": "54, score 54"
   },
-  "paper_pnl_today": 0.0,
+  "paper_pnl_today": 2.03,
   "last_tally_date": "2026-11-09",
-  "open": [
-    {
-      "coin": "MET",
-      "score": 58,
-      "entry": 0.33583,
-      "stop": 0.33549417000000004,
-      "tp1": 0.32343988,
-      "tp2": 0.3163766535471784,
-      "stop0": 0.3484032142857143,
-      "entry_ms": 1794240952130,
-      "entry_time": "2026-11-09T16:15:52.130932+00:00",
-      "change_24h": 10.83,
-      "risk_usd": 1.6,
-      "notional": 42.69,
-      "leverage": 3,
-      "tp1_hit": true
-    }
-  ],
+  "open": [],
   "closed": [
     {
       "coin": "USUAL",
@@ -245,6 +228,27 @@
       "r": 1.11,
       "pnl_usd": 2.32,
       "exit_time": "2026-11-09T19:15:38.871521+00:00"
+    },
+    {
+      "coin": "MET",
+      "score": 58,
+      "entry": 0.33583,
+      "stop": 0.33549417000000004,
+      "tp1": 0.32343988,
+      "tp2": 0.3163766535471784,
+      "stop0": 0.3484032142857143,
+      "entry_ms": 1794240952130,
+      "entry_time": "2026-11-09T16:15:52.130932+00:00",
+      "change_24h": 10.83,
+      "risk_usd": 1.6,
+      "notional": 42.69,
+      "leverage": 3,
+      "tp1_hit": true,
+      "exit": 0.3163766535471784,
+      "exit_reason": "TP1 + TP2",
+      "r": 1.27,
+      "pnl_usd": 2.03,
+      "exit_time": "2026-11-10T03:10:42.314768+00:00"
     }
   ],
   "day_start_pot": 60.62,
