@@ -6,7 +6,7 @@
     "INIT": "61, funding -0.0610%/h too negative",
     "STABLE": "66, not rolled over (3h, -0.3%)",
     "AVAX": "46, score 46",
-    "ETHFI": "51, score 51"
+    "ETHFI": "54, score 54"
   },
   "paper_pnl_today": 0.0,
   "last_tally_date": "2026-11-09",
