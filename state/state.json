@@ -308,22 +308,6 @@
       "old_rule_ok": true
     },
     {
-      "coin": "VVV",
-      "score": 59,
-      "entry": 21.604,
-      "stop": 22.182357142857143,
-      "stop0": 22.182357142857143,
-      "tp1": 20.994736,
-      "tp2": 20.729,
-      "stop_new_rule": 22.2921,
-      "entry_ms": 1794258067208,
-      "entry_time": "2026-11-09T21:01:07.208523+00:00",
-      "change_24h": 8.68,
-      "hours_since_peak": 1,
-      "drop_from_peak": -1.15,
-      "old_rule_ok": true
-    },
-    {
       "coin": "ETHFI",
       "score": 56,
       "entry": 0.63005,
@@ -459,6 +443,28 @@
       "exit_time": "2026-11-10T07:25:36.207101+00:00",
       "exit_reason_new_stop": "TP1 + break-even stop",
       "r_new_stop": 0.45
+    },
+    {
+      "coin": "VVV",
+      "score": 59,
+      "entry": 21.604,
+      "stop": 22.182357142857143,
+      "stop0": 22.182357142857143,
+      "tp1": 20.994736,
+      "tp2": 20.729,
+      "stop_new_rule": 22.2921,
+      "entry_ms": 1794258067208,
+      "entry_time": "2026-11-09T21:01:07.208523+00:00",
+      "change_24h": 8.68,
+      "hours_since_peak": 1,
+      "drop_from_peak": -1.15,
+      "old_rule_ok": true,
+      "exit": 20.729,
+      "exit_reason": "TP1 + TP2",
+      "r": 1.28,
+      "exit_time": "2026-11-10T11:35:37.354823+00:00",
+      "exit_reason_new_stop": "TP1 + TP2",
+      "r_new_stop": 1.08
     }
   ]
 }
