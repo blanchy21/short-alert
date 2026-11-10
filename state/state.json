@@ -3,9 +3,10 @@
   "alerted_today": [],
   "near_misses_today": {
     "JUP": "58, not rolled over (5h, -2.1%)",
-    "INIT": "58, funding -0.1997%/h too negative",
+    "INIT": "61, funding -0.0610%/h too negative",
     "STABLE": "66, not rolled over (3h, -0.3%)",
-    "AVAX": "46, score 46"
+    "AVAX": "46, score 46",
+    "ETHFI": "51, score 51"
   },
   "paper_pnl_today": 0.0,
   "last_tally_date": "2026-11-09",
