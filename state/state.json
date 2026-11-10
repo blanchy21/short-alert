@@ -22,7 +22,7 @@
       "coin": "SOPH",
       "score": 60,
       "entry": 0.001443,
-      "stop": 0.00153102,
+      "stop": 0.001441557,
       "tp1": 0.001372266,
       "tp2": 0.0013325,
       "stop0": 0.00153102,
@@ -31,7 +31,8 @@
       "change_24h": 16.75,
       "risk_usd": 2.95,
       "notional": 48.28,
-      "leverage": 3
+      "leverage": 3,
+      "tp1_hit": true
     }
   ],
   "closed": [
