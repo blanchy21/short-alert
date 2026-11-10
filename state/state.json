@@ -6,7 +6,8 @@
     "INIT": "61, funding -0.0610%/h too negative",
     "STABLE": "66, not rolled over (3h, -0.3%)",
     "AVAX": "46, score 46",
-    "ETHFI": "54, score 54"
+    "ETHFI": "54, score 54",
+    "GRAM": "61, not rolled over (4h, -2.2%)"
   },
   "paper_pnl_today": 2.03,
   "last_tally_date": "2026-11-09",
@@ -383,11 +384,28 @@
       "hours_since_peak": 5,
       "drop_from_peak": -2.09,
       "old_rule_ok": true
+    },
+    {
+      "coin": "GRAM",
+      "score": 61,
+      "entry": 1.0956,
+      "stop": 1.1202964285714285,
+      "stop0": 1.1202964285714285,
+      "tp1": 1.07047684,
+      "tp2": 1.0630080176502767,
+      "stop_new_rule": 1.1422979999999998,
+      "entry_ms": 1794291068048,
+      "entry_time": "2026-11-10T06:11:08.048981+00:00",
+      "change_24h": 8.66,
+      "hours_since_peak": 4,
+      "drop_from_peak": -2.17,
+      "old_rule_ok": true
     }
   ],
   "blocked_today": [
     "JUP",
-    "STABLE"
+    "STABLE",
+    "GRAM"
   ],
   "blocked_closed": [
     {
