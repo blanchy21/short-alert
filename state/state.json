@@ -285,54 +285,6 @@
   },
   "blocked_open": [
     {
-      "coin": "PYTH",
-      "score": 68,
-      "entry": 0.065994,
-      "stop": 0.06793435714285714,
-      "stop0": 0.06793435714285714,
-      "tp1": 0.0638989,
-      "tp2": 0.063185,
-      "stop_new_rule": 0.06793435714285714,
-      "entry_ms": 1794256538777,
-      "entry_time": "2026-11-09T20:35:38.777655+00:00",
-      "change_24h": 6.22,
-      "hours_since_peak": 0,
-      "drop_from_peak": -0.89,
-      "old_rule_ok": false
-    },
-    {
-      "coin": "JUP",
-      "score": 61,
-      "entry": 0.25419,
-      "stop": 0.26119928571428574,
-      "stop0": 0.26119928571428574,
-      "tp1": 0.24569748,
-      "tp2": 0.24181999999999998,
-      "stop_new_rule": 0.263415,
-      "entry_ms": 1794256539171,
-      "entry_time": "2026-11-09T20:35:39.171416+00:00",
-      "change_24h": 6.92,
-      "hours_since_peak": 1,
-      "drop_from_peak": -1.57,
-      "old_rule_ok": true
-    },
-    {
-      "coin": "XTEN",
-      "score": 55,
-      "entry": 0.24481,
-      "stop": 0.25310607142857144,
-      "stop0": 0.25310607142857144,
-      "tp1": 0.23579250000000002,
-      "tp2": 0.23180250000000002,
-      "stop_new_rule": 0.2554794,
-      "entry_ms": 1794256545180,
-      "entry_time": "2026-11-09T20:35:45.180332+00:00",
-      "change_24h": 5.74,
-      "hours_since_peak": 5,
-      "drop_from_peak": -2.26,
-      "old_rule_ok": true
-    },
-    {
       "coin": "ETHFI",
       "score": 56,
       "entry": 0.63005,
@@ -500,6 +452,72 @@
       "exit_time": "2026-11-10T13:30:58.110927+00:00",
       "exit_reason_new_stop": "TP1 + TP2",
       "r_new_stop": 0.57
+    },
+    {
+      "coin": "PYTH",
+      "score": 68,
+      "entry": 0.065994,
+      "stop": 0.06793435714285714,
+      "stop0": 0.06793435714285714,
+      "tp1": 0.0638989,
+      "tp2": 0.063185,
+      "stop_new_rule": 0.06793435714285714,
+      "entry_ms": 1794256538777,
+      "entry_time": "2026-11-09T20:35:38.777655+00:00",
+      "change_24h": 6.22,
+      "hours_since_peak": 0,
+      "drop_from_peak": -0.89,
+      "old_rule_ok": false,
+      "exit": 0.064449,
+      "exit_reason": "24h TIME EXIT (after TP1)",
+      "r": 0.94,
+      "exit_time": "2026-11-10T20:40:44.482984+00:00",
+      "exit_reason_new_stop": "24h TIME EXIT (after TP1)",
+      "r_new_stop": 0.94
+    },
+    {
+      "coin": "JUP",
+      "score": 61,
+      "entry": 0.25419,
+      "stop": 0.26119928571428574,
+      "stop0": 0.26119928571428574,
+      "tp1": 0.24569748,
+      "tp2": 0.24181999999999998,
+      "stop_new_rule": 0.263415,
+      "entry_ms": 1794256539171,
+      "entry_time": "2026-11-09T20:35:39.171416+00:00",
+      "change_24h": 6.92,
+      "hours_since_peak": 1,
+      "drop_from_peak": -1.57,
+      "old_rule_ok": true,
+      "exit": 0.25578,
+      "exit_reason": "24h TIME EXIT",
+      "r": -0.23,
+      "exit_time": "2026-11-10T20:40:44.763416+00:00",
+      "exit_reason_new_stop": "24h TIME EXIT",
+      "r_new_stop": -0.17
+    },
+    {
+      "coin": "XTEN",
+      "score": 55,
+      "entry": 0.24481,
+      "stop": 0.25310607142857144,
+      "stop0": 0.25310607142857144,
+      "tp1": 0.23579250000000002,
+      "tp2": 0.23180250000000002,
+      "stop_new_rule": 0.2554794,
+      "entry_ms": 1794256545180,
+      "entry_time": "2026-11-09T20:35:45.180332+00:00",
+      "change_24h": 5.74,
+      "hours_since_peak": 5,
+      "drop_from_peak": -2.26,
+      "old_rule_ok": true,
+      "exit": 0.24159,
+      "exit_reason": "24h TIME EXIT",
+      "r": 0.39,
+      "exit_time": "2026-11-10T20:40:45.042072+00:00",
+      "exit_reason_new_stop": "24h TIME EXIT",
+      "r_new_stop": 0.3
     }
   ],
   "oi_hist": {
@@ -523,6 +541,10 @@
       [
         1794342935836,
         15338548.0
+      ],
+      [
+        1794343242210,
+        15091332.0
       ]
     ],
     "SOPH": [
@@ -545,6 +567,10 @@
       [
         1794342935836,
         314837420.0
+      ],
+      [
+        1794343242210,
+        314746442.0
       ]
     ],
     "GRAM": [
@@ -567,6 +593,10 @@
       [
         1794342935836,
         16510968.0
+      ],
+      [
+        1794343242210,
+        16477074.0
       ]
     ]
   }
