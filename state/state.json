@@ -3,8 +3,9 @@
   "alerted_today": [],
   "near_misses_today": {
     "JUP": "58, not rolled over (5h, -2.1%)",
-    "INIT": "56, funding -0.2661%/h too negative",
-    "STABLE": "66, not rolled over (3h, -0.3%)"
+    "INIT": "58, funding -0.1997%/h too negative",
+    "STABLE": "66, not rolled over (3h, -0.3%)",
+    "AVAX": "46, score 46"
   },
   "paper_pnl_today": 0.0,
   "last_tally_date": "2026-11-09",
@@ -347,22 +348,6 @@
       "old_rule_ok": true
     },
     {
-      "coin": "STABLE",
-      "score": 55,
-      "entry": 0.028808,
-      "stop": 0.029423214285714285,
-      "stop0": 0.029423214285714285,
-      "tp1": 0.02814822065708871,
-      "tp2": 0.027999568,
-      "stop_new_rule": 0.02960958,
-      "entry_ms": 1794261689602,
-      "entry_time": "2026-11-09T22:01:29.602202+00:00",
-      "change_24h": 9.69,
-      "hours_since_peak": 1,
-      "drop_from_peak": -0.76,
-      "old_rule_ok": false
-    },
-    {
       "coin": "SPX",
       "score": 60,
       "entry": 0.36299,
@@ -415,5 +400,28 @@
     "JUP",
     "STABLE"
   ],
-  "blocked_closed": []
+  "blocked_closed": [
+    {
+      "coin": "STABLE",
+      "score": 55,
+      "entry": 0.028808,
+      "stop": 0.029423214285714285,
+      "stop0": 0.029423214285714285,
+      "tp1": 0.02814822065708871,
+      "tp2": 0.027999568,
+      "stop_new_rule": 0.02960958,
+      "entry_ms": 1794261689602,
+      "entry_time": "2026-11-09T22:01:29.602202+00:00",
+      "change_24h": 9.69,
+      "hours_since_peak": 1,
+      "drop_from_peak": -0.76,
+      "old_rule_ok": false,
+      "exit": 0.029423214285714285,
+      "exit_reason": "STOP",
+      "r": -1.0,
+      "exit_time": "2026-11-10T00:25:34.201553+00:00",
+      "exit_reason_new_stop": "STOP",
+      "r_new_stop": -1.0
+    }
+  ]
 }
