@@ -1,6 +1,8 @@
 {
   "date": "2026-11-10",
-  "alerted_today": [],
+  "alerted_today": [
+    "SOPH"
+  ],
   "near_misses_today": {
     "JUP": "58, not rolled over (5h, -2.1%)",
     "INIT": "61, funding -0.0610%/h too negative",
@@ -13,7 +15,23 @@
   },
   "paper_pnl_today": 2.03,
   "last_tally_date": "2026-11-09",
-  "open": [],
+  "open": [
+    {
+      "coin": "SOPH",
+      "score": 60,
+      "entry": 0.001443,
+      "stop": 0.00153102,
+      "tp1": 0.001372266,
+      "tp2": 0.0013325,
+      "stop0": 0.00153102,
+      "entry_ms": 1794320153031,
+      "entry_time": "2026-11-10T14:15:53.031851+00:00",
+      "change_24h": 16.75,
+      "risk_usd": 2.95,
+      "notional": 48.28,
+      "leverage": 3
+    }
+  ],
   "closed": [
     {
       "coin": "USUAL",
