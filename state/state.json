@@ -270,31 +270,7 @@
   "warned_today": {
     "connection": "2026-11-06"
   },
-  "blocked_open": [
-    {
-      "coin": "MINA",
-      "score": 58,
-      "entry": 0.05346,
-      "stop": 0.054451178571428574,
-      "stop0": 0.054451178571428574,
-      "tp1": 0.052330992,
-      "tp2": 0.05196203324649023,
-      "stop_new_rule": 0.05557674,
-      "entry_ms": 1794415544317,
-      "entry_time": "2026-11-11T16:45:44.317067+00:00",
-      "change_24h": 6.05,
-      "hours_since_peak": 1,
-      "drop_from_peak": -1.88,
-      "old_rule_ok": true,
-      "funding": 1.25e-05,
-      "oi_usd": 1612027,
-      "oi_chg_1h_pct": -0.82,
-      "exit": 0.054451178571428574,
-      "exit_reason": "STOP",
-      "r": -1.0,
-      "exit_time": "2026-11-11T17:25:34.412998+00:00"
-    }
-  ],
+  "blocked_open": [],
   "blocked_today": [],
   "blocked_closed": [
     {
@@ -738,6 +714,31 @@
       "exit_time": "2026-11-12T02:20:38.772301+00:00",
       "exit_reason_new_stop": "TP1 + break-even stop",
       "r_new_stop": 0.46
+    },
+    {
+      "coin": "MINA",
+      "score": 58,
+      "entry": 0.05346,
+      "stop": 0.054451178571428574,
+      "stop0": 0.054451178571428574,
+      "tp1": 0.052330992,
+      "tp2": 0.05196203324649023,
+      "stop_new_rule": 0.05557674,
+      "entry_ms": 1794415544317,
+      "entry_time": "2026-11-11T16:45:44.317067+00:00",
+      "change_24h": 6.05,
+      "hours_since_peak": 1,
+      "drop_from_peak": -1.88,
+      "old_rule_ok": true,
+      "funding": 1.25e-05,
+      "oi_usd": 1612027,
+      "oi_chg_1h_pct": -0.82,
+      "exit": 0.054451178571428574,
+      "exit_reason": "STOP",
+      "r": -1.0,
+      "exit_time": "2026-11-11T17:25:34.412998+00:00",
+      "exit_reason_new_stop": "TP1 + TP2",
+      "r_new_stop": 0.62
     }
   ],
   "oi_hist": {}
