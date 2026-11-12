@@ -1,20 +1,7 @@
 {
-  "date": "2026-11-11",
+  "date": "2026-11-12",
   "alerted_today": [],
-  "near_misses_today": {
-    "LIT": "63, not rolled over (1h, -0.6%)",
-    "USUAL": "63, not rolled over (1h, -0.8%)",
-    "ICP": "63, not rolled over (1h, -1.0%)",
-    "PYTH": "61, not rolled over (2h, -1.5%)",
-    "SPX": "48, score 48",
-    "GRAM": "51, score 51",
-    "DYM": "63, not rolled over (0h, -0.8%)",
-    "0G": "50, score 50",
-    "XLM": "65, not rolled over (1h, -0.8%)",
-    "MINA": "65, not rolled over (0h, +0.0%)",
-    "AVNT": "46, score 46",
-    "FET": "65, not rolled over (1h, -1.1%)"
-  },
+  "near_misses_today": {},
   "paper_pnl_today": 0.0,
   "last_tally_date": "2026-11-11",
   "open": [],
@@ -279,7 +266,7 @@
       "exit_time": "2026-11-10T18:25:35.373697+00:00"
     }
   ],
-  "day_start_pot": 95.88,
+  "day_start_pot": 65.69,
   "warned_today": {
     "connection": "2026-11-06"
   },
@@ -350,16 +337,7 @@
       "oi_chg_1h_pct": -0.95
     }
   ],
-  "blocked_today": [
-    "LIT",
-    "USUAL",
-    "ICP",
-    "PYTH",
-    "XLM",
-    "MINA",
-    "FET",
-    "DYM"
-  ],
+  "blocked_today": [],
   "blocked_closed": [
     {
       "coin": "STABLE",
@@ -757,10 +735,6 @@
   "oi_hist": {
     "XMR": [
       [
-        1794434461345,
-        240651.244
-      ],
-      [
         1794434738124,
         240670.25
       ],
@@ -851,6 +825,10 @@
       [
         1794441331968,
         239539.878
+      ],
+      [
+        1794441664189,
+        239608.376
       ]
     ],
     "DYM": [
@@ -877,6 +855,16 @@
       [
         1794441331968,
         15372867.6
+      ],
+      [
+        1794441664189,
+        15339105.6
+      ]
+    ],
+    "MINA": [
+      [
+        1794441664189,
+        29918140.0
       ]
     ]
   }
