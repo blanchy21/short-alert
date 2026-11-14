@@ -295,27 +295,7 @@
   "warned_today": {
     "connection": "2026-11-06"
   },
-  "blocked_open": [
-    {
-      "coin": "INJ",
-      "score": 58,
-      "entry": 8.151,
-      "stop": 8.420903571428571,
-      "stop0": 8.420903571428571,
-      "tp1": 7.8259756,
-      "tp2": 7.500951199999999,
-      "stop_new_rule": 8.458146,
-      "entry_ms": 1794582339262,
-      "entry_time": "2026-11-13T15:05:39.262360+00:00",
-      "change_24h": 10.82,
-      "hours_since_peak": 2,
-      "drop_from_peak": -1.7,
-      "old_rule_ok": true,
-      "funding": 1.25e-05,
-      "oi_usd": 7709032,
-      "oi_chg_1h_pct": -0.49
-    }
-  ],
+  "blocked_open": [],
   "blocked_today": [],
   "blocked_closed": [
     {
@@ -934,14 +914,35 @@
       "exit_time": "2026-11-14T05:25:40.715361+00:00",
       "exit_reason_new_stop": "STOP",
       "r_new_stop": -1.0
+    },
+    {
+      "coin": "INJ",
+      "score": 58,
+      "entry": 8.151,
+      "stop": 8.420903571428571,
+      "stop0": 8.420903571428571,
+      "tp1": 7.8259756,
+      "tp2": 7.500951199999999,
+      "stop_new_rule": 8.458146,
+      "entry_ms": 1794582339262,
+      "entry_time": "2026-11-13T15:05:39.262360+00:00",
+      "change_24h": 10.82,
+      "hours_since_peak": 2,
+      "drop_from_peak": -1.7,
+      "old_rule_ok": true,
+      "funding": 1.25e-05,
+      "oi_usd": 7709032,
+      "oi_chg_1h_pct": -0.49,
+      "exit": 7.500951199999999,
+      "exit_reason": "TP1 + TP2",
+      "r": 1.81,
+      "exit_time": "2026-11-14T14:35:32.614501+00:00",
+      "exit_reason_new_stop": "TP1 + TP2",
+      "r_new_stop": 1.59
     }
   ],
   "oi_hist": {
     "SOPH": [
-      [
-        1794659460345,
-        194227558.0
-      ],
       [
         1794659732491,
         191845630.0
@@ -1037,6 +1038,10 @@
       [
         1794666651244,
         204793692.0
+      ],
+      [
+        1794666932365,
+        214540044.0
       ]
     ]
   }
