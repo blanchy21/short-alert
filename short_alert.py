@@ -4,7 +4,7 @@ Short Alert - hourly moon-dump short alerts for Hyperliquid (paper mode).
 
 Uses moon_dump_monitor.py's scoring unchanged, plus the Short Seller rules:
   - score 55+ and NOT in the Day 2 bounce zone (peak > 24h ago)
-  - "rolled over": peak at least 1h ago AND price at least 3% below the peak
+  - "rolled over": peak at least 1h ago AND price at least 2% below the peak
   - BTC filter: no new shorts while BTC is above a rising 4h EMA21
   - stop = 1.5x ATR above entry, but at least 2% above the peak; capped at 10%; TP1 no further than -20%
   - one alert per coin per day, max hold 24h
@@ -44,7 +44,7 @@ from moon_dump_monitor import (
 MIN_SCORE = 55
 NEAR_MISS_SCORE = 45          # 45-54 gets logged as a near-miss
 MIN_HOURS_SINCE_PEAK = 1
-MAX_DROP_FROM_PEAK = -3.0     # price must be at least 3% below the peak (was 1% until 9 Nov 2026)
+MAX_DROP_FROM_PEAK = -2.0     # price must be at least 2% below the peak (1% until 9 Nov, 3% 9-14 Nov 2026)
 STOP_ATR_MULT = 1.5
 MAX_STOP_PCT = 10.0
 STOP_ABOVE_PEAK_PCT = 2.0     # stop at least 2% above the pump peak (added 9 Nov 2026)
@@ -450,7 +450,7 @@ def oi_fields(cand: dict) -> dict:
 
 def log_blocked(state: dict, coin: str, score: int, chg: float, sd: dict, candles: list, extra: dict = None) -> None:
     """A setup that scored enough but wasn't rolled over: record what the trade would have been.
-    Log only - no order, no alert, no effect on the pot or limits. For the review of the 3% rule."""
+    Log only - no order, no alert, no effect on the pot or limits. For the review of the rolled-over rule."""
     state.setdefault("blocked_today", [])
     if coin in state["blocked_today"]:
         return
@@ -517,7 +517,7 @@ def tally_message(state: dict) -> str:
     bc = state.get("blocked_closed", [])
     if bc or state.get("blocked_open"):
         would = [t for t in bc if t.get("old_rule_ok")]
-        lines.append(f"Blocked by the 3% rule (log only): {len(state.get('blocked_open', []))} being followed, "
+        lines.append(f"Blocked by the rolled-over rule (log only): {len(state.get('blocked_open', []))} being followed, "
                      f"{len(bc)} finished; the {len(would)} the old rule would have traded: "
                      f"{sum(t['r'] for t in would):+.2f}R")
     allc = state["closed"]

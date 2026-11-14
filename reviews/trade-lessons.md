@@ -39,6 +39,10 @@ them on a week of trades rather than one loss. First review: **Saturday 14 Novem
   - **Lesson:** a 3% intrahour dip in a coin with accelerating volume is not a top. The 3% rule doesn't protect
     against that.
 
+**Decision (14 Nov, Paul):** change the drop-from-peak rule from 3% to **2%**. The stop stays at least 2% above
+the peak. The blocked-setup log keeps running (it now records setups between 0% and 2% below the peak), so the
+next review can check the 2% rule the same way. Next review: Saturday 21 Nov.
+
 ## Losing trades
 
 ### USUAL — 9 Nov, live, −$1.60 (−1.07R)
