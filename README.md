@@ -15,6 +15,10 @@ Hourly moon-dump short alerts for Hyperliquid, sent to Telegram. Paper mode by d
   Each trade and blocked setup also records funding, open interest in USD (`oi_usd`) and its change over
   the last hour (`oi_chg_1h_pct`, from the bot's own snapshots in `oi_hist`). Log only, for the weekly review.
   A live order the exchange rejects (e.g. open interest at cap) is logged as paper with `order_error`.
+- **Manual trades are ring-fenced.** Any position the bot didn't open (e.g. Paul's `xyz:AMD`) is never touched.
+  The bot won't short that coin, it doesn't use one of the 3 open-short slots, and it's kept out of the pot:
+  its unrealised P&L (gain or loss) and the margin it uses are both taken off, so the bot sizes only from money
+  not tied up in it. The scan log lists them as "Ring-fenced manual positions".
 - Daily tally to Telegram at 21:00 Dublin.
 
 ## Setup (about 10 minutes)

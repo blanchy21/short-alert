@@ -23,6 +23,19 @@ MIN_NOTIONAL_USD = 10.0      # Hyperliquid's minimum order value
 ENTRY_SLIPPAGE = 0.01        # max 1% worse than mid on the market entry
 
 
+
+def pot_adjustment(positions: list, fenced) -> float:
+    """What to take off the account value: gains on the bot's positions, and for ring-fenced (manual)
+    positions their whole unrealised P&L plus the margin they use."""
+    out = 0.0
+    for p in positions:
+        pnl = float(p.get("unrealizedPnl") or 0)
+        if p["coin"] in fenced:
+            out += pnl + float(p.get("marginUsed") or 0)
+        else:
+            out += max(0.0, pnl)
+    return out
+
 class TraderError(Exception):
     pass
 
@@ -106,18 +119,20 @@ class Trader:
             out += [p["position"] for p in st.get("assetPositions", []) if float(p["position"]["szi"]) != 0]
         return out
 
-    def pot(self) -> float:
-        """Account value with unrealised gains ignored and unrealised losses counted (per position)."""
+    def pot(self, fenced: set = frozenset(), positions: list = None) -> float:
+        """Account value with unrealised gains ignored and unrealised losses counted (per position).
+        Positions in `fenced` (Paul's manual trades) are ring-fenced: their P&L is taken out whether gain or loss,
+        and the margin they use is taken off too, so the bot only sizes from money not tied up in them."""
         if self.unified():
             # Collateral is the spot USDC balance. It already includes the unrealised P&L of open positions
             # on every perp market (main and HIP-3), so take each position's gain back out; losses stay in.
-            gains = sum(max(0.0, float(p.get("unrealizedPnl") or 0)) for p in self.all_positions())
+            positions = self.all_positions() if positions is None else positions
             usdc = sum(float(b["total"]) for b in self.info.spot_user_state(self.address)["balances"]
                        if b["coin"] == "USDC")
-            return usdc - gains
+            return usdc - pot_adjustment(positions, fenced)
         us = self.info.user_state(self.address)
-        gains = sum(max(0.0, float(p["position"].get("unrealizedPnl") or 0)) for p in us["assetPositions"])
-        return float(us["marginSummary"]["accountValue"]) - gains
+        return (float(us["marginSummary"]["accountValue"])
+                - pot_adjustment([p["position"] for p in us["assetPositions"]], fenced))
 
     def open_coins(self) -> set:
         """Coins with an open position on any perp market (HIP-3 ones keep their prefix, e.g. "xyz:NVDA")."""

@@ -588,10 +588,15 @@ def main() -> None:
         print(f"Couldn't update blocked setups: {e}")
 
     # 2. Pot, caps and market filter
-    pot = None
+    pot, manual = None, set()
     if LIVE and trader:
         try:
-            pot = trader.pot()
+            positions = trader.all_positions()
+            # Positions the bot didn't open (Paul's manual trades) are ring-fenced: left alone, kept out of the
+            # pot and the open-shorts count, and their coins aren't shorted by the bot.
+            bot_coins = {t["coin"] for t in state["open"] if t.get("live")}
+            manual = {p["coin"] for p in positions if p["coin"] not in bot_coins}
+            pot = trader.pot(manual, positions)
         except Exception as e:
             warn_once(state, "pot", f"⚠️ Couldn't read Hyperliquid account value: {e}\nNew setups will be paper-traded.")
             trader = None
@@ -602,14 +607,12 @@ def main() -> None:
     day_start_pot = state["day_start_pot"]
     loss_today = max(0.0, -state["paper_pnl_today"])
     day_stopped = loss_today >= DAILY_LOSS_PCT / 100 * day_start_pot
-    open_coins = {t["coin"] for t in state["open"]}
-    if LIVE and trader:
-        try:
-            open_coins |= trader.open_coins()  # includes positions opened elsewhere (e.g. by hand)
-        except Exception as e:
-            print(f"Couldn't read exchange positions: {e}")
-    print(f"Pot ${pot:.2f} (day start ${day_start_pot:.2f}) | open shorts {len(open_coins)} | "
+    open_coins = {t["coin"] for t in state["open"]} | manual   # coins the bot won't short
+    bot_open = len(state["open"])                                # only the bot's trades use a slot
+    print(f"Pot ${pot:.2f} (day start ${day_start_pot:.2f}) | open shorts {bot_open} | "
           f"today {state['paper_pnl_today']:+.2f}")
+    if manual:
+        print(f"Ring-fenced manual positions (not touched, not in pot): {', '.join(sorted(manual))}")
 
     btc = btc_filter()
     print(btc["note"])
@@ -643,7 +646,7 @@ def main() -> None:
             block = f"funding {cand['funding']*100:.4f}%/h too negative"
         elif day_stopped:
             block = "day-stop hit"
-        elif len(open_coins) >= MAX_OPEN_SHORTS:
+        elif bot_open >= MAX_OPEN_SHORTS:
             block = f"{MAX_OPEN_SHORTS} shorts already open"
 
         print(f"{coin:<8} {chg:+6.1f}% score {score:>3} {sd['bounce_risk']:<8} -> {block or 'ALERT'}")
@@ -733,6 +736,7 @@ def main() -> None:
             trade.update(live=True, size=live["size"], network=live["network"])
         state["open"].append(trade)
         open_coins.add(coin)
+        bot_open += 1
         save_state(state)  # record a live position straight away
 
     # 4. Daily tally at 21:00 Dublin (or first run after, if a run was delayed)
