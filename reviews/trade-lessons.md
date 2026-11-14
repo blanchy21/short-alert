@@ -39,9 +39,11 @@ them on a week of trades rather than one loss. First review: **Saturday 14 Novem
   - **Lesson:** a 3% intrahour dip in a coin with accelerating volume is not a top. The 3% rule doesn't protect
     against that.
 
-**Decision (14 Nov, Paul):** change the drop-from-peak rule from 3% to **2%**. The stop stays at least 2% above
-the peak. The blocked-setup log keeps running (it now records setups between 0% and 2% below the peak), so the
-next review can check the 2% rule the same way. Next review: Saturday 21 Nov.
+**Decision (14 Nov, Paul):** change the drop-from-peak rule from 3% to **1%**, keeping the stop at least 2% above the
+peak. Paul first picked 2%, then chose 1% because **total profit matters more to him than the depth of a losing
+run**. It's the best total in the backtest (+16.0R against +10.3R for 2%), but it has a deeper worst run (−18.9R,
+about −$57 at today's sizes). The blocked-setup log keeps running, but now only catches setups less than 1% off the
+peak or with a peak under 1h old. Next review: Saturday 21 Nov.
 
 ## Losing trades
 
