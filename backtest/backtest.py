@@ -55,6 +55,8 @@ VARIANTS = {
     "rules 8-9 Nov (1% drop, ATR stop)": dict(min_drop=1.0, stop_peak_buffer=None),
     "rules before 8 Nov fix":        dict(min_drop=1.0, stop_peak_buffer=None, tp1_floor_r=0.0, be_guard=False),
     "drop >= 1% (stop 2% above peak)": dict(min_drop=1.0),
+    "drop >= 1.5% (stop 2% above peak)": dict(min_drop=1.5),
+    "drop >= 2% (stop 2% above peak)": dict(min_drop=2.0),
     "drop >= 5% from peak":          dict(min_drop=5.0),
     "close below 1h EMA9":           dict(below_ema9=True),
     "no peak retest in last 3h":     dict(no_retest_h=3),
@@ -71,7 +73,7 @@ MEMO = {}  # (coin, i) -> (score data, levels): the same for every variant
 
 
 # ---------------------------------------------------------------- data
-def post(body, tries=4):
+def post(body, tries=8):
     for i in range(tries):
         try:
             r = requests.post(API, json=body, timeout=30)
@@ -80,7 +82,7 @@ def post(body, tries=4):
         except Exception:
             if i == tries - 1:
                 raise
-            time.sleep(2 * (i + 1))
+            time.sleep(5 * (i + 1))   # Hyperliquid rate-limits (429) bulk downloads
 
 
 def candles(coin, start_ms, end_ms, refresh=False):
@@ -94,7 +96,7 @@ def candles(coin, start_ms, end_ms, refresh=False):
     data = data if isinstance(data, list) else []
     with open(path, "w") as f:
         json.dump(data, f)
-    time.sleep(0.15)
+    time.sleep(0.5)
     return data
 
 

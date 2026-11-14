@@ -3,6 +3,42 @@
 A note on every trade, winners and losers: what happened and why. **Rules stay unchanged until the weekly review**, so we judge
 them on a week of trades rather than one loss. First review: **Saturday 14 November 2026** (covering 6–13 Nov).
 
+## Weekly review — 14 Nov 2026 (6–14 Nov)
+
+**Paul's concern:** the 3% rolled-over rule is stopping almost every trade. **The data agrees.**
+- **Bot trades since the rule went in (9 Nov 16:37):** only 2 in 5 days, both SOPH and both paper (live was
+  paused 11–14 Nov). One reached TP2 (+1.03R), one was stopped (−1.0R).
+- **Blocked-setup log:** 27 setups scored 55+ and were stopped only by the 3% rule. The 19 that the old 1% rule
+  would have traded won 12 of 19 for **+7.0R** with the old stop, **+7.9R** with the new wider stop. So far the
+  3% rule has cost money, not saved it. (The log doesn't apply the open-shorts or risk limits, so the real figure
+  would be a bit lower.) By drop size: 1–1.5% +4.6R (7), 1.5–2% +3.9R (7), 2–3% −1.5R (5).
+- **Backtest rerun on fresh data** (17 Jul–14 Nov, 120 days):
+
+| Rules | Trades | Win % | Total R | Worst run | 1st / 2nd half | Since 9 Nov |
+|---|---|---|---|---|---|---|
+| Live: 3% drop, stop 2% above peak | 73 | 66% | +9.4 | −6.0R | +7.5 / +1.9 | 4 trades, +2.2R |
+| 2% drop, stop 2% above peak | 110 | 60% | +10.3 | −11.6R | +10.8 / −0.5 | 7 trades, +2.1R |
+| 1.5% drop, stop 2% above peak | 131 | 59% | +6.2 | −18.5R | +10.6 / −4.4 | 9 trades, +4.0R |
+| 1% drop, stop 2% above peak | 153 | 61% | +16.0 | −18.9R | +17.2 / −1.3 | 11 trades, +6.4R |
+
+- **What it means:** the 3% rule is the steadiest (smallest losing run, both halves positive) but trades about
+  once every two days. A 1% drop with the wider stop makes the most R and agrees with the blocked log, but its
+  worst losing run is three times deeper. The 1.5% row doing worse than both 1% and 2% shows how noisy these
+  numbers are: no version is proven better.
+- **Other checks:**
+  - Open interest: only 15 blocked setups have it. Rising OI did not go with losses (+4.5R on 5 against +2.1R on 10),
+    far too few to use.
+  - Break-even after TP1: still fine.
+  - Funding near the limit: no new cases.
+- **SOPH 13 Nov loser (paper, −1.0R, −$3.05):**
+  - **Entry** 07:01 UTC at 0.001483, score 55. Price was 3.9% below the 06:00 high, peak 1h old, so it passed the
+    3% rule. Funding was slightly positive and OI was falling (−2.7% in 1h).
+  - **Stopped in 20 minutes** at 0.001575.
+  - **Then SOPH ran another +40%** (0.00213 by 16:00) on volume about 50× normal. It was a multi-day pumper (it also
+    ran on 10 Nov).
+  - **Lesson:** a 3% intrahour dip in a coin with accelerating volume is not a top. The 3% rule doesn't protect
+    against that.
+
 ## Losing trades
 
 ### USUAL — 9 Nov, live, −$1.60 (−1.07R)
@@ -172,6 +208,7 @@ the bug fixed 8 Nov); the 9 Nov paper trades BOME, AVAX and MET all reached TP2.
 | 9 Nov | AVAX | paper | 75 | TP1 + TP2 | +1.11 | +$2.32 |
 | 9 Nov | MET | paper | 58 | TP1 + TP2 | +1.27 | +$2.03 |
 | 10 Nov | SOPH | paper (order rejected, OI cap) | 60 | TP1 + TP2 | +1.03 | +$3.04 |
+| 13 Nov | SOPH | paper (live paused) | 55 | Stop | −1.00 | −$3.05 |
 
 ## Backtest (run 8 Nov 2026): 120 days, 177 coins
 
