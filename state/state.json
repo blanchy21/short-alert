@@ -1,10 +1,7 @@
 {
-  "date": "2026-11-14",
+  "date": "2026-11-15",
   "alerted_today": [],
-  "near_misses_today": {
-    "BERA": "58, not rolled over (0h, -3.9%)",
-    "SOPH": "46, score 46"
-  },
+  "near_misses_today": {},
   "paper_pnl_today": 0.0,
   "last_tally_date": "2026-11-14",
   "open": [],
@@ -292,7 +289,7 @@
       "exit_time": "2026-11-13T07:20:41.663518+00:00"
     }
   ],
-  "day_start_pot": 115.83,
+  "day_start_pot": 121.34,
   "warned_today": {
     "connection": "2026-11-06"
   },
@@ -1039,6 +1036,10 @@
       [
         1794700533142,
         197037766.0
+      ],
+      [
+        1794700862492,
+        197026478.0
       ]
     ]
   }
