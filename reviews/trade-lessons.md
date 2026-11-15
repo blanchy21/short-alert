@@ -47,6 +47,51 @@ peak or with a peak under 1h old. Next review: Saturday 21 Nov.
 
 ## Losing trades
 
+### 15 Nov: two live losses on the first day of the 1% rule (MEGA −$4.10, VVV −$3.77, −2.1R in all)
+Both were live trades and both were stopped. **Neither would have been taken under the 3% rule**, so these are the
+first real cost of the 14 Nov change. A losing run like this is what the backtest warned about (−18.9R worst run), and
+two trades don't prove the rule wrong.
+
+**MEGA, −$4.10 (−1.08R):**
+- **Entry** 08:01 UTC at 0.048583, score 56, +8.5% in 24h. **The peak (0.049361, 07:00 candle) was only 1h old**, and
+  price was only **1.6% off it**. Funding +0.00125%, OI $7.9M, flat (+0.3% in 1h).
+- **What happened:** MEGA had made a higher high in every hour from 02:00 to 07:00. At best the trade was 0.33R in
+  profit (low 0.04792); TP1 needed 0.98R. The 09:00 candle broke out to 0.05082 on the highest volume of the day
+  ($312k against about $180k) and took the stop at 09:40, filled at 0.05069 (a little slippage past 0.05058).
+- **After:** it topped at 0.0513 at 13:00, then drifted back to about 0.0499. That's still above our entry, so even
+  holding on wouldn't have paid.
+- **Lesson:** this is the USUAL/BIO pattern again: a fresh peak, a shallow dip and a trend still making higher highs.
+  The backtest shows this group is the weak spot of the 1% rule (see recommendation below).
+
+**VVV, −$3.77 (−1.02R):**
+- **Entry** 13:01 UTC at 19.785, score 56, +10.0% in 24h. The peak (20.272) was 9h old and price was 2.4% below it,
+  so it was a reasonable-looking setup. OI was large ($51M) and flat; funding +0.00125%.
+- **What happened:** the trade moved the right way at first. The low was 19.253 at 15:00, 0.60R in profit; TP1 needed
+  1.30R. Then VVV ground up all afternoon and evening with no single spike, broke the peak at about 16:00, and took
+  the stop (20.674) at 23:05, filled at 20.677. It was in the trade 10 hours.
+- **One warning sign:** at 09:00, 4h before entry, VVV had already gone back to 20.21, within 0.3% of the peak, on
+  heavy volume ($1.26M). Buyers were still defending the highs.
+- **Lesson:** a normal loss. The setup was fine on paper, but TP1 at 1.30R was a long way off for a $51M coin moving
+  2–3% a day. Large, slow coins need a long time to reach TP1, which gives the trend time to resume.
+
+**Recommendation (Paul to decide):** add one rule. **If the peak is under 2h old, require a 2% drop. Otherwise 1% is
+enough.** In the 1% backtest (153 trades, 17 Jul–14 Nov):
+| Group | Trades | Total R | 1st / 2nd half | Stopped |
+|---|---|---|---|---|
+| Peak under 2h old and drop under 2% (MEGA's type) | 40 | **−4.9R** | −2.9 / −2.0 | 48% |
+| Everything else | 113 | **+20.9R** | +20.2 / +0.8 | 30% |
+| All (the current rule) | 153 | +16.0R | +17.2 / −1.3 | 33% |
+
+- **What the new rule changes:**
+  - It cuts the one group that lost in both halves, which lifts total R and makes the 2nd half positive.
+  - The worst run improves from −18.9R to −12.5R.
+  - It keeps about three quarters of the trades.
+  - It would have skipped MEGA. VVV would still have been taken.
+- **Caveat:** these numbers come from re-slicing the existing trade list, not a full rerun. A full rerun would
+  account for slots freed by skipped trades. Run it before switching.
+- **Watch, but don't add a rule yet:** a retest of the peak (within 0.5%) in the 4 hours before entry, as VVV showed.
+  The older "no retest in 3h" test was flat (+0.2R), so there isn't enough evidence for it.
+
 ### USUAL — 9 Nov, live, −$1.60 (−1.07R)
 - **Entry** 15:05 UTC at 0.01062, score 63, +6.2% in 24h. It was the last live trade before Paul paused live
   trading at 15:37.
@@ -191,6 +236,9 @@ much, and it stops a TP1 winner turning into a loss. Real trades so far: ZEC and
 the bug fixed 8 Nov); the 9 Nov paper trades BOME, AVAX and MET all reached TP2. Recheck with real trades at the review.
 
 ## Patterns to check at the review
+- **(21 Nov) Fresh-peak filter:** decide whether to require a 2% drop when the peak is under 2h old (see 15 Nov
+  losses). Do a full backtest rerun first.
+- **(21 Nov) Slow, large coins:** do trades with TP1 over 1.2R or OI over $30M stop more often? (VVV, 15 Nov.)
 - Losers (W, MET, BIO, USUAL) were all shorted **while the coin was still pushing up**. Do winners show a deeper drop from the peak,
   or a clear lower high, before entry?
 - **Stop distance above the recent high:** compare winners and losers. Is 0.4% too tight?
@@ -215,6 +263,8 @@ the bug fixed 8 Nov); the 9 Nov paper trades BOME, AVAX and MET all reached TP2.
 | 9 Nov | MET | paper | 58 | TP1 + TP2 | +1.27 | +$2.03 |
 | 10 Nov | SOPH | paper (order rejected, OI cap) | 60 | TP1 + TP2 | +1.03 | +$3.04 |
 | 13 Nov | SOPH | paper (live paused) | 55 | Stop | −1.00 | −$3.05 |
+| 15 Nov | MEGA | live | 56 | Stop | −1.08 | −$4.10 |
+| 15 Nov | VVV | live | 56 | Stop | −1.02 | −$3.77 |
 
 ## Backtest (run 8 Nov 2026): 120 days, 177 coins
 
