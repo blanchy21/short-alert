@@ -52,6 +52,24 @@ the peak). Trading is **paper only for the week** to 21 Nov. Paul's manual AMD l
 bot doesn't even connect to Hyperliquid. At the 21 Nov review, judge the 2% rule on that week's paper trades
 before going live again.
 
+### CASHCAT — 16 Nov, live, −$8.38 (−1.01R): the last live trade before the paper week
+- **Entry** 05:05 UTC at 0.044428, score 58, +7.5% in 24h. The peak (0.047519, 03:00 candle) was 2h old and price was
+  **6.5% below it**, so it would have passed even the old 3% rule. **The drop rule wasn't the problem here.**
+- **Stop** 0.048487 (2% above the peak), 9.1% away from entry. TP1 0.041649 was 0.68R away. (The 0.75R TP1 floor is
+  applied before the stop is widened to the peak, as in the backtest, so the final ratio can fall below 0.75R.)
+- **Other readings:** funding was **negative** (−0.009%/h, so shorts were paying), not far from the −0.02% limit.
+  OI was $7.4M and falling (−2.4% in 1h).
+- **What happened:** at best the trade was 0.26R in profit (low 0.04338 at 06:00). Then a **second pump wave** came:
+  0.0466 at 08:00, then 0.0511 at 09:00 on $527k volume (about 4× the hours before). The stop hit at 09:35. CASHCAT
+  went on to 0.0532 at 10:00 on $1M volume. The stop was right to get us out.
+- **Why it lost:** the same story as SOPH on 13 Nov. A deep pullback in a coin that's still attracting volume isn't a
+  top, and a second wave came within hours. It was the biggest loss in dollars so far ($8.38) because the risk was
+  10% of a pot of about $83.
+- **Checked, but no rule from it:** in the 2% backtest, neither wide stops (8%+ away: +3.9R) nor deep drops (5–8%:
+  +1.3R) clearly lose. So this is a loss the rules accept, not a gap in them.
+- **Watch at the review:** negative funding at entry (shorts paying), and volume picking up again in the hours after
+  entry.
+
 ### 15 Nov: two live losses on the first day of the 1% rule (MEGA −$4.10, VVV −$3.77, −2.1R in all)
 Both were live trades and both were stopped. **Neither would have been taken under the 3% rule**, so these are the
 first real cost of the 14 Nov change. A losing run like this is what the backtest warned about (−18.9R worst run), and
@@ -243,6 +261,8 @@ the bug fixed 8 Nov); the 9 Nov paper trades BOME, AVAX and MET all reached TP2.
 ## Patterns to check at the review
 - **(21 Nov) Fresh-peak filter:** decide whether to require a 2% drop when the peak is under 2h old (see 15 Nov
   losses). Do a full backtest rerun first.
+- **(21 Nov) Second-wave pumps (SOPH 13 Nov, CASHCAT 16 Nov):** do losers have negative funding at entry, or volume
+  rising again within 2h? Could a volume check in the hours after entry close those trades early?
 - **(21 Nov) Slow, large coins:** do trades with TP1 over 1.2R or OI over $30M stop more often? (VVV, 15 Nov.)
 - Losers (W, MET, BIO, USUAL) were all shorted **while the coin was still pushing up**. Do winners show a deeper drop from the peak,
   or a clear lower high, before entry?
@@ -270,6 +290,7 @@ the bug fixed 8 Nov); the 9 Nov paper trades BOME, AVAX and MET all reached TP2.
 | 13 Nov | SOPH | paper (live paused) | 55 | Stop | −1.00 | −$3.05 |
 | 15 Nov | MEGA | live | 56 | Stop | −1.08 | −$4.10 |
 | 15 Nov | VVV | live | 56 | Stop | −1.02 | −$3.77 |
+| 16 Nov | CASHCAT | live | 58 | Stop | −1.01 | −$8.38 |
 
 ## Backtest (run 8 Nov 2026): 120 days, 177 coins
 
