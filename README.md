@@ -5,7 +5,7 @@ Hourly moon-dump short alerts for Hyperliquid, sent to Telegram. Paper mode by d
 - `moon_dump_monitor.py` — your scanner, unchanged. Its scoring is what decides the score.
 - `short_alert.py` — runs the scan and adds the Short Seller rules:
   - score 55+, not in the Day 2 bounce zone
-  - rolled over = peak at least 1h ago and price at least 1% below it (3% from 9 to 14 Nov 2026); stop at least 2% above the peak
+  - rolled over = peak at least 1h ago and price at least 2% below it (3% on 9-14 Nov 2026, 1% on 14-16 Nov); stop at least 2% above the peak
     (setups scoring 55+ that this rule blocks are logged and followed on paper, for review: no orders, no alerts)
   - no new shorts while BTC is above a rising 4h EMA21
   - stop 1.5× ATR but at least 2% above the pump peak (max 10%), TP1 at the nearest strong support at least 0.75× the stop distance away (else 2× ATR)

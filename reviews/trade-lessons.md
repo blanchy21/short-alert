@@ -47,6 +47,11 @@ peak or with a peak under 1h old. Next review: Saturday 21 Nov.
 
 ## Losing trades
 
+**Decision (16 Nov, Paul):** after the two losses below, the drop rule goes back to **2%** (stop still at least 2% above
+the peak). Trading is **paper only for the week** to 21 Nov. Paul's manual AMD long stays untouched: in paper mode the
+bot doesn't even connect to Hyperliquid. At the 21 Nov review, judge the 2% rule on that week's paper trades
+before going live again.
+
 ### 15 Nov: two live losses on the first day of the 1% rule (MEGA −$4.10, VVV −$3.77, −2.1R in all)
 Both were live trades and both were stopped. **Neither would have been taken under the 3% rule**, so these are the
 first real cost of the 14 Nov change. A losing run like this is what the backtest warned about (−18.9R worst run), and

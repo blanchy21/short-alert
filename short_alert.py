@@ -44,7 +44,7 @@ from moon_dump_monitor import (
 MIN_SCORE = 55
 NEAR_MISS_SCORE = 45          # 45-54 gets logged as a near-miss
 MIN_HOURS_SINCE_PEAK = 1
-MAX_DROP_FROM_PEAK = -1.0     # price must be at least 1% below the peak (3% on 9-14 Nov 2026, 2% briefly on 14 Nov)
+MAX_DROP_FROM_PEAK = -2.0     # price must be at least 2% below the peak (3% on 9-14 Nov 2026, 1% on 14-16 Nov)
 STOP_ATR_MULT = 1.5
 MAX_STOP_PCT = 10.0
 STOP_ABOVE_PEAK_PCT = 2.0     # stop at least 2% above the pump peak (added 9 Nov 2026)
