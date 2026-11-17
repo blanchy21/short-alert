@@ -45,6 +45,32 @@ run**. It's the best total in the backtest (+16.0R against +10.3R for 2%), but i
 about −$57 at today's sizes). The blocked-setup log keeps running, but now only catches setups less than 1% off the
 peak or with a peak under 1h old. Next review: Saturday 21 Nov.
 
+## Paper week on the 2% rule (16–17 Nov): 3 closed, +1.37R, +$6.50
+Live trading was off (Paul's call after the CASHCAT loss), so all three were paper trades on the 2% rule. RUNE
+(score 61, entry 0.55536, opened 17 Nov 15:31) was still open when live trading restarted on 17 Nov at 23:35. It stays
+a paper trade to the end.
+
+- **ICP: winner, +1.75R (+$7.16), 24h time exit after TP1.**
+  - **Entry** 16 Nov 23:01 at 2.49, score 61, +11.5% in 24h. The peak (2.5686) was 1h old and price was 3.1% below it.
+  - **What happened:** TP1 (2.267) filled. The rest was still in profit after 24h (low 2.216) and closed on the time limit.
+  - **Lesson:** a fresh peak with a 3%+ drop works, the opposite of MEGA (fresh peak, 1.6% drop). It fits the
+    15 Nov finding that a 2% drop matters most when the peak is fresh.
+- **PURR: winner, +0.62R (+$1.28), TP1 + TP2.**
+  - **Entry** 17 Nov 01:01 at 0.093603, score 56, +6.1% in 24h. The peak was 3h old and price was 2.3% below it.
+  - **Funding was strongly positive** (+0.04%/h), so longs were paying shorts.
+  - **What happened:** TP1 and TP2 filled by 09:20. Only a small win in R, because TP1 was close.
+- **HMSTR: loser, −1.0R (−$1.94), stop.**
+  - **Entry** 17 Nov 02:05 at 0.000143, score 63, only +5.2% in 24h. The peak was 3h old and price was 2.1% below it,
+    just over the 2% line.
+  - **What happened:** it barely went our way (low 0.000142, about 0.2R), then pushed back above the peak and took the
+    stop at 12:15.
+  - **Points to note:**
+    - HMSTR's price moves in steps of 0.000001, which is 0.7% of the price. A "2% drop" is only three price steps,
+      so the signal is coarse.
+    - Its 24h move (+5.2%) was the smallest of the three.
+- **Takeaway:** a small sample, but it points the same way as the backtest. Drops of 3%+ worked; a drop only just
+  over 2% on a weak pump lost.
+
 ## Losing trades
 
 **Decision (16 Nov, Paul):** after the two losses below, the drop rule goes back to **2%** (stop still at least 2% above
@@ -291,6 +317,9 @@ the bug fixed 8 Nov); the 9 Nov paper trades BOME, AVAX and MET all reached TP2.
 | 15 Nov | MEGA | live | 56 | Stop | −1.08 | −$4.10 |
 | 15 Nov | VVV | live | 56 | Stop | −1.02 | −$3.77 |
 | 16 Nov | CASHCAT | live | 58 | Stop | −1.01 | −$8.38 |
+| 16 Nov | ICP | paper (2% rule) | 61 | TP1 + 24h exit | +1.75 | +$7.16 |
+| 17 Nov | PURR | paper (2% rule) | 56 | TP1 + TP2 | +0.62 | +$1.28 |
+| 17 Nov | HMSTR | paper (2% rule) | 63 | Stop | −1.00 | −$1.94 |
 
 ## Backtest (run 8 Nov 2026): 120 days, 177 coins
 
