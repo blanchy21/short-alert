@@ -1,7 +1,9 @@
 {
   "date": "2026-11-20",
   "alerted_today": [],
-  "near_misses_today": {},
+  "near_misses_today": {
+    "BLUR": "55, not rolled over (2h, -0.8%)"
+  },
   "paper_pnl_today": 0.0,
   "last_tally_date": "2026-11-19",
   "open": [],
@@ -651,8 +653,30 @@
   "warned_today": {
     "connection": "2026-11-06"
   },
-  "blocked_open": [],
-  "blocked_today": [],
+  "blocked_open": [
+    {
+      "coin": "BLUR",
+      "score": 55,
+      "entry": 0.007013,
+      "stop": 0.007198035714285714,
+      "stop0": 0.007198035714285714,
+      "tp1": 0.006843832103468518,
+      "tp2": 0.0068065,
+      "stop_new_rule": 0.007213440000000001,
+      "entry_ms": 1795183271993,
+      "entry_time": "2026-11-20T14:01:11.993605+00:00",
+      "change_24h": 5.65,
+      "hours_since_peak": 2,
+      "drop_from_peak": -0.83,
+      "old_rule_ok": false,
+      "funding": -0.0001271736,
+      "oi_usd": 966622,
+      "oi_chg_1h_pct": null
+    }
+  ],
+  "blocked_today": [
+    "BLUR"
+  ],
   "blocked_closed": [
     {
       "coin": "STABLE",
@@ -2014,6 +2038,10 @@
       [
         1795182935019,
         136058944.0
+      ],
+      [
+        1795183267511,
+        137832904.0
       ]
     ],
     "STABLE": [
@@ -2028,6 +2056,10 @@
       [
         1795182935019,
         30269208.0
+      ],
+      [
+        1795183267511,
+        30258546.0
       ]
     ]
   }
