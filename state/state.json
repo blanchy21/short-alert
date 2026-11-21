@@ -2,32 +2,9 @@
   "date": "2026-11-21",
   "alerted_today": [],
   "near_misses_today": {},
-  "paper_pnl_today": 0.0,
+  "paper_pnl_today": 2.77,
   "last_tally_date": "2026-11-20",
-  "open": [
-    {
-      "coin": "BLUR",
-      "score": 60,
-      "entry": 0.007537,
-      "stop": 0.007529,
-      "tp1": 0.007175,
-      "tp2": 0.007061,
-      "stop0": 0.007913,
-      "entry_ms": 1795201545799,
-      "entry_time": "2026-11-20T19:05:45.799743+00:00",
-      "change_24h": 13.92,
-      "risk_usd": 2.62,
-      "notional": 52.52,
-      "leverage": 3,
-      "funding": 1.25e-05,
-      "oi_usd": 1164506,
-      "oi_chg_1h_pct": 4.22,
-      "live": true,
-      "size": 6968.0,
-      "network": "mainnet",
-      "tp1_hit": true
-    }
-  ],
+  "open": [],
   "closed": [
     {
       "coin": "USUAL",
@@ -668,6 +645,33 @@
       "r": 0.96,
       "pnl_usd": 1.58,
       "exit_time": "2026-11-19T21:35:36.803462+00:00"
+    },
+    {
+      "coin": "BLUR",
+      "score": 60,
+      "entry": 0.007537,
+      "stop": 0.007529,
+      "tp1": 0.007175,
+      "tp2": 0.007061,
+      "stop0": 0.007913,
+      "entry_ms": 1795201545799,
+      "entry_time": "2026-11-20T19:05:45.799743+00:00",
+      "change_24h": 13.92,
+      "risk_usd": 2.62,
+      "notional": 52.52,
+      "leverage": 3,
+      "funding": 1.25e-05,
+      "oi_usd": 1164506,
+      "oi_chg_1h_pct": 4.22,
+      "live": true,
+      "size": 6968.0,
+      "network": "mainnet",
+      "tp1_hit": true,
+      "exit": 0.0071330000000000005,
+      "exit_reason": "TP1 + TP2",
+      "r": 1.06,
+      "pnl_usd": 2.77,
+      "exit_time": "2026-11-21T03:35:44.202602+00:00"
     }
   ],
   "day_start_pot": 71.24,
@@ -2048,10 +2052,6 @@
   "oi_hist": {
     "BLUR": [
       [
-        1795224936795,
-        151225444.0
-      ],
-      [
         1795225248088,
         151442694.0
       ],
@@ -2142,6 +2142,10 @@
       [
         1795231853276,
         155746126.0
+      ],
+      [
+        1795232142144,
+        163510290.0
       ]
     ]
   }
