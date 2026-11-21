@@ -1,11 +1,7 @@
 {
-  "date": "2026-11-20",
-  "alerted_today": [
-    "BLUR"
-  ],
-  "near_misses_today": {
-    "BLUR": "55, not rolled over (2h, -0.8%)"
-  },
+  "date": "2026-11-21",
+  "alerted_today": [],
+  "near_misses_today": {},
   "paper_pnl_today": 0.0,
   "last_tally_date": "2026-11-20",
   "open": [
@@ -674,14 +670,12 @@
       "exit_time": "2026-11-19T21:35:36.803462+00:00"
     }
   ],
-  "day_start_pot": 48.05,
+  "day_start_pot": 71.24,
   "warned_today": {
     "connection": "2026-11-06"
   },
   "blocked_open": [],
-  "blocked_today": [
-    "BLUR"
-  ],
+  "blocked_today": [],
   "blocked_closed": [
     {
       "coin": "STABLE",
@@ -2054,10 +2048,6 @@
   "oi_hist": {
     "BLUR": [
       [
-        1795211734663,
-        147346132.0
-      ],
-      [
         1795212063890,
         147326974.0
       ],
@@ -2152,12 +2142,10 @@
       [
         1795218928835,
         161104156.0
-      ]
-    ],
-    "SOPH": [
+      ],
       [
-        1795218928835,
-        422436150.0
+        1795219263293,
+        152726224.0
       ]
     ]
   }
