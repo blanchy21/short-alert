@@ -784,7 +784,7 @@
       "exit_time": "2026-11-23T14:01:26.609118+00:00"
     }
   ],
-  "day_start_pot": 5.86,
+  "day_start_pot": null,
   "warned_today": {
     "connection": "2026-11-06"
   },
