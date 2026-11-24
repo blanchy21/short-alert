@@ -3,6 +3,59 @@
 A note on every trade, winners and losers: what happened and why. **Rules stay unchanged until the weekly review**, so we judge
 them on a week of trades rather than one loss. First review: **Saturday 14 November 2026** (covering 6–13 Nov).
 
+## Weekly review — 21 Nov 2026, written late on 24 Nov (17–23 Nov)
+
+**Rules this week:**
+- Drop at least 2% from a peak at least 1h old; stop at least 2% above the peak.
+- Live from 17 Nov 23:35, after the paper week was cut short.
+
+**Live: 11 trades, 8 won, +2.84R but −$2.21.**
+- **18–21 Nov:** the 2% rule worked. 8 trades, 8 winners, +5.17R, +$12.34. Every one reached TP1, and none was stopped.
+- **22–23 Nov:** 3 stops (ETHFI, JTO, NEAR) and one break-even (STBL), −2.33R, −$12.55.
+  - All four were open while **BTC rose 59k → 61.6k (22 Nov) and then 61.3k → 64.6k in two hours (23 Nov 13:00–14:00)**.
+  - JTO and NEAR were stopped at the same minute (14:01). STBL had already hit TP1, so the break-even stop saved it.
+    STBL then ran +17%.
+- **Why R is positive but dollars negative:** the winners averaged +0.65R, while the losers were −1.1R each. The stops
+  also came when each trade risked more ($2.9–$5.2, against $1.4–$3.0 for most winners).
+
+**Paper:** RUNE +0.71R (TP1 + TP2) and SOPH −0.04R (24h exit).
+
+**Blocked-setup log, 16–23 Nov:** 39 setups scored 55+ but were blocked by the rolled-over rule. These figures don't
+apply the slot or risk limits.
+
+| Group | Setups | Won | Total R |
+|---|---|---|---|
+| Drop 1–2%, peak 1h+ (the 1% rule would have taken these) | 17 | 10 | +4.47 |
+| — before 22 Nov | 12 | 9 | +7.12 |
+| — 22 Nov on | 5 | 1 | −2.65 |
+| — peak under 2h old | 8 | 4 | +1.99 |
+| — peak 2h+ old | 9 | 6 | +2.48 |
+| Under 1% drop, or peak under 1h old (blocked by any rule) | 22 | 10 | +0.91 |
+
+- **What it means:** the 1% rule would have added about +4.5R this week. All of that came in the good stretch, and it
+  would have lost too on 22–23 Nov.
+- **No sign this week of the fresh-peak weakness:** the peak-under-2h group made +2.0R. This week doesn't repeat the
+  backtest finding (−4.9R on 40 such trades), so the fresh-peak filter idea from 15 Nov stays unproven.
+
+**Main lesson: the losses came from BTC, not from the drop rule.**
+- The BTC filter only blocks *new* shorts while BTC is above a rising 4h EMA. It does nothing for shorts already
+  open, and with up to 3 open shorts, one BTC spike can stop all of them at once (JTO and NEAR at 14:01 on 23 Nov).
+- Repeat coins went both ways: ETHFI won on 19 Nov and was stopped on 22 Nov; SOPH, VVV and MEGA have also come back.
+  There's no pattern yet.
+
+**Recommendations, for Paul to decide (nothing changed yet):**
+1. **Keep the 2% rule.** 8 of 8 won outside the BTC spike, and the 1% rule's extra trades would also have lost in it.
+   The case for 1% is the +4.5R in the blocked log. The case against is the three live losses on 15–16 Nov.
+2. **Backtest two ways to handle a BTC spike while shorts are open:**
+   - **(a)** a maximum of 2 open shorts instead of 3 (the backtest already models slots);
+   - **(b)** close open shorts, or move their stops to break-even, when BTC rises 2%+ within an hour.
+
+   Only switch if the backtest shows a gain in both halves.
+3. **Funding and OI:** nothing stood out this week. STBL at the 1.1M OI level and NEAR at 96M OI both lost to the same
+   BTC move.
+
+Next review: **Saturday 28 Nov.**
+
 ## Weekly review — 14 Nov 2026 (6–14 Nov)
 
 **Paul's concern:** the 3% rolled-over rule is stopping almost every trade. **The data agrees.**
@@ -44,6 +97,45 @@ peak. Paul first picked 2%, then chose 1% because **total profit matters more to
 run**. It's the best total in the backtest (+16.0R against +10.3R for 2%), but it has a deeper worst run (−18.9R,
 about −$57 at today's sizes). The blocked-setup log keeps running, but now only catches setups less than 1% off the
 peak or with a peak under 1h old. Next review: Saturday 21 Nov.
+
+## Live on the 2% rule, 18–23 Nov: trade notes
+Live trades are listed by close time. Columns:
+- **Peak / drop:** how old the peak was at entry, and how far price was below it.
+- **TP1 R:** how far TP1 was, in R.
+- **Best:** the best point in the trade, in R.
+
+| Coin | Entry → exit (UTC) | Score | Peak / drop | TP1 R | Best | Result |
+|---|---|---|---|---|---|---|
+| RUNE (paper) | 17 Nov 15:31 → 18 Nov 14:10 | 61 | 2h / −2.0% | 0.64 | 1.12 | TP1 + TP2, +0.71R, +$2.24 |
+| MELANIA | 18 Nov 05:01 → 19 Nov 05:05 | 56 | 2h / −8.1% | 0.43 | 0.24 | 24h exit, +0.19R, +$0.57 |
+| SOPH (paper) | 18 Nov 09:05 → 19 Nov 09:10 | 60 | under 1h / −6.8% | 1.05 | 0.58 | 24h exit, −0.04R, −$0.08 |
+| STRK | 19 Nov 10:01 → 10:50 | 58 | 1h / −2.5% | 0.48 | 0.87 | TP1 + TP2, +0.61R, +$1.42 |
+| 2Z | 18 Nov 16:01 → 19 Nov 16:05 | 56 | 2h / −2.6% | 0.65 | 1.42 | TP1 + 24h exit, +0.89R, +$1.27 |
+| SYRUP | 19 Nov 16:06 → 17:05 | 55 | 1h / −4.8% | 0.37 | 0.64 | TP1 + TP2, +0.45R, +$0.94 |
+| ETHFI | 19 Nov 05:50 → 20:35 | 63 | 2h / −2.2% | 0.64 | 1.16 | TP1 + TP2, +0.80R, +$1.79 |
+| USELESS | 19 Nov 10:51 → 21:35 | 61 | 4h / −3.2% | 0.75 | 1.18 | TP1 + TP2, +0.96R, +$1.58 |
+| BLUR | 20 Nov 19:05 → 21 Nov 03:35 | 60 | 1h / −3.0% | 0.96 | 1.65 | TP1 + TP2, +1.06R, +$2.77 |
+| ETHFI | 22 Nov 02:40 → 13:55 | 60 | 2h / −2.2% | 0.77 | 0.27 | **Stop, −1.15R, −$4.34** |
+| STBL | 22 Nov 13:50 → 23 Nov 13:25 | 61 | 4h / −2.2% | 0.57 | 0.71 | TP1 + break-even, +0.22R, +$0.48 |
+| JTO | 22 Nov 18:25 → 23 Nov 14:01 | 56 | 7h / −4.1% | 0.39 | 0.26 | **Stop, −1.03R, −$5.36** |
+| NEAR | 22 Nov 18:31 → 23 Nov 14:01 | 56 | 5h / −1.9% | 1.02 | 0.49 | **Stop, −1.16R, −$3.33** |
+
+- **Winners:**
+  - Every live winner reached TP1 within hours, while BTC was flat to falling. Six hours after the exit, all were
+    3–10% below our entry, so the shorts were right and the targets left money on the table.
+  - TP1 was often close (0.37–0.65R), so the wins were small in R.
+- **MELANIA:** a deep drop (−8.1%) put the stop 10% away, so TP1 was only 0.43R. It drifted sideways for 24h and
+  made only +0.19R. Deep drops give poor reward for the risk.
+- **ETHFI (22 Nov), stop:** entered at 02:40. BTC then ran from 58.9k to 61.6k between 06:00 and 12:00, and ETHFI was
+  stopped at 13:55. It was the second ETHFI short in three days; the first won.
+- **STBL:** TP1 filled. Then BTC's 23 Nov spike pushed it 3R against us, and the break-even stop closed the rest at no
+  loss. STBL then ran +17%. **The break-even stop earned its keep.**
+- **JTO and NEAR, stops:** both were opened on 22 Nov evening and both stopped at 14:01 on 23 Nov, when BTC jumped
+  4.8% in two hours. These two losses are one event, not two separate bad calls.
+  - NEAR ($96M OI) is a large coin that moves with BTC.
+  - JTO had little volume ($11k/h). Six hours later both were back near entry (JTO +2.7%, NEAR −0.6%).
+- **SOPH (paper):** shorted under an hour after a fresh spike, 6.8% below it, with funding strongly positive. It went
+  0.87R against us, then came back to a flat 24h exit.
 
 ## Paper week on the 2% rule (16–17 Nov): 3 closed, +1.37R, +$6.50
 Live trading was off (Paul's call after the CASHCAT loss), so all three were paper trades on the 2% rule. RUNE
@@ -320,6 +412,19 @@ the bug fixed 8 Nov); the 9 Nov paper trades BOME, AVAX and MET all reached TP2.
 | 16 Nov | ICP | paper (2% rule) | 61 | TP1 + 24h exit | +1.75 | +$7.16 |
 | 17 Nov | PURR | paper (2% rule) | 56 | TP1 + TP2 | +0.62 | +$1.28 |
 | 17 Nov | HMSTR | paper (2% rule) | 63 | Stop | −1.00 | −$1.94 |
+| 18 Nov | RUNE | paper | 61 | TP1 + TP2 | +0.71 | +$2.24 |
+| 19 Nov | MELANIA | live | 56 | 24h exit | +0.19 | +$0.57 |
+| 19 Nov | SOPH | paper | 60 | 24h exit | −0.04 | −$0.08 |
+| 19 Nov | STRK | live | 58 | TP1 + TP2 | +0.61 | +$1.42 |
+| 19 Nov | 2Z | live | 56 | TP1 + 24h exit | +0.89 | +$1.27 |
+| 19 Nov | SYRUP | live | 55 | TP1 + TP2 | +0.45 | +$0.94 |
+| 19 Nov | ETHFI | live | 63 | TP1 + TP2 | +0.80 | +$1.79 |
+| 19 Nov | USELESS | live | 61 | TP1 + TP2 | +0.96 | +$1.58 |
+| 21 Nov | BLUR | live | 60 | TP1 + TP2 | +1.06 | +$2.77 |
+| 22 Nov | ETHFI | live | 60 | Stop | −1.15 | −$4.34 |
+| 23 Nov | STBL | live | 61 | TP1 + break-even | +0.22 | +$0.48 |
+| 23 Nov | JTO | live | 56 | Stop | −1.03 | −$5.36 |
+| 23 Nov | NEAR | live | 56 | Stop | −1.16 | −$3.33 |
 
 ## Backtest (run 8 Nov 2026): 120 days, 177 coins
 
