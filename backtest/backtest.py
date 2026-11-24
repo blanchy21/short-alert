@@ -49,7 +49,7 @@ FEE_ROUND_TRIP = 0.0009      # 0.045% taker in and out
 # Each variant changes one thing from the live rules ("baseline").
 BASE = dict(min_score=sa.MIN_SCORE, min_drop=abs(sa.MAX_DROP_FROM_PEAK), min_hours=sa.MIN_HOURS_SINCE_PEAK,
             below_ema9=False, no_retest_h=0, stop_peak_buffer=sa.STOP_ABOVE_PEAK_PCT, min_tp1_r=0.0,
-            tp1_floor_r=sa.MIN_TP1_R, be_guard=True)
+            tp1_floor_r=sa.MIN_TP1_R, be_guard=True, max_open=sa.MAX_OPEN_SHORTS, btc_spike=None, btc_spike_mode="close")
 VARIANTS = {
     "baseline (live rules)":         {},
     "rules 8-9 Nov (1% drop, ATR stop)": dict(min_drop=1.0, stop_peak_buffer=None),
@@ -68,6 +68,13 @@ VARIANTS = {
     "skip if TP1 < 0.75R":           dict(min_tp1_r=0.75),
     "skip if TP1 < 1R":              dict(min_tp1_r=1.0),
     "stop 2% above peak + TP1 >= 0.75R": dict(min_drop=1.0, min_tp1_r=0.75),
+    # BTC-spike protection (added 24 Nov 2026 after the 22-23 Nov stops)
+    "max 2 open shorts":             dict(max_open=2),
+    "max 1 open short":              dict(max_open=1),
+    "close shorts if BTC +2% in 1h": dict(btc_spike=2.0),
+    "close shorts if BTC +1.5% in 1h": dict(btc_spike=1.5),
+    "BTC +2% in 1h: break-even if winning, else close": dict(btc_spike=2.0, btc_spike_mode="be"),
+    "max 2 open + close if BTC +2% in 1h": dict(max_open=2, btc_spike=2.0),
 }
 MEMO = {}  # (coin, i) -> (score data, levels): the same for every variant
 
@@ -149,9 +156,12 @@ def setup_at(win, v, key):
     return {**lv, "score": sd["score"], "drop": sd["drop_from_peak"], "hours_since_peak": sd["hours_since_peak"]}
 
 
-def follow(t, after, be_guard=True):
+def follow(t, after, be_guard=True, btc_move=None, spike=None, spike_mode="close"):
     """Same path as live paper mode: stop first in each candle, half at TP1, rest at TP2. After TP1 the
-    stop moves to break-even once a candle closes clearly below it (be_guard=False: straight away, the old rule)."""
+    stop moves to break-even once a candle closes clearly below it (be_guard=False: straight away, the old rule).
+    spike: if BTC's 1h close-to-close move (btc_move(t_ms), in %) reaches it, the short is closed at that candle's close
+    ("close"), or its stop moves to break-even when it is in profit and it is closed otherwise ("be"). Hourly candles
+    can't show whether the coin's stop or the BTC move came first, so the stop is checked first (pessimistic)."""
     entry, stop0, tp1, tp2 = t["entry"], t["stop"], t["tp1"], t["tp2"]
     be = entry * (1 - sa.BREAKEVEN_PCT / 100)
     ready = lambda px: (not be_guard) or px < be * (1 - sa.BREAKEVEN_MARGIN_PCT / 100)
@@ -176,6 +186,12 @@ def follow(t, after, be_guard=True):
             break
         if tp1_hit and stop >= stop0 and ready(cl):
             stop = be
+        if spike and btc_move and btc_move(int(c["t"])) >= spike:
+            if spike_mode == "be" and cl < be:
+                stop = min(stop, be)
+            else:
+                exit_px, reason = cl, ("BTC spike exit after TP1" if tp1_hit else "BTC spike exit")
+                break
     if exit_px is None:
         if len(after) < sa.MAX_HOLD_HOURS:
             return None  # still open at the end of the data
@@ -204,6 +220,11 @@ def main():
     print(f"Loading 1h candles for {len(coins) + 1} coins ({args.days} days)...", flush=True)
     btc = candles("BTC", start_ms, end_ms, args.refresh)
     btc_idx = {int(c["t"]): i for i, c in enumerate(btc)}
+    def btc_move(t_ms):
+        i = btc_idx.get(t_ms)
+        if not i:
+            return 0.0
+        return (float(btc[i]["c"]) / float(btc[i - 1]["c"]) - 1) * 100
     data = {}
     for n, coin in enumerate(coins, 1):
         cs = candles(coin, start_ms, end_ms, args.refresh)
@@ -247,12 +268,12 @@ def main():
                 continue
             close_ms = t + HOUR          # the candle's close: entry time
             open_until = [x for x in open_until if x > close_ms]
-            if len(open_until) >= sa.MAX_OPEN_SHORTS:
+            if len(open_until) >= v["max_open"]:
                 continue
             s = setup_at(cs[i - WINDOW + 1:i + 1], v, (coin, i))
             if not s:
                 continue
-            out = follow(s, cs[i + 1:], v["be_guard"])
+            out = follow(s, cs[i + 1:], v["be_guard"], btc_move, v["btc_spike"], v["btc_spike_mode"])
             if not out:
                 continue
             traded.add((coin, day))
@@ -317,14 +338,14 @@ def write_report(results, days, n_coins, start_ms, end_ms):
                      f"{sum(t['r'] for t in trades if t['entry_time'] < mid):+.1f} | "
                      f"{sum(t['r'] for t in trades if t['entry_time'] >= mid):+.1f} |")
     lines += ["", "## How trades ended", "", "| Rules | " + " | ".join(
-        ["STOP", "TP1 + STOP", "TP1 + break-even", "TP1 + TP2", "24h exit"]) + " |", "|---|---|---|---|---|---|"]
+        ["STOP", "TP1 + STOP", "TP1 + break-even", "TP1 + TP2", "24h exit", "BTC spike exit"]) + " |", "|---|---|---|---|---|---|---|"]
     for name, trades in results.items():
         s = stats(trades)
         if s:
             rs = s["reasons"]
             lines.append(f"| {name} | " + " | ".join(str(rs.get(k, 0)) for k in
                                                      ["STOP", "TP1 + STOP", "TP1 + break-even", "TP1 + TP2",
-                                                      "24h exit"]) + " |")
+                                                      "24h exit", "BTC spike exit"]) + " |")
     with open(os.path.join(HERE, "results.md"), "w") as f:
         f.write("\n".join(lines) + "\n")
     print("\n".join(lines))

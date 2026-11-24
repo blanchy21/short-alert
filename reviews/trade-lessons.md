@@ -56,6 +56,39 @@ apply the slot or risk limits.
 
 Next review: **Saturday 28 Nov.**
 
+### Backtest of the BTC-spike protections (24 Nov, at Paul's request)
+Fresh data, 27 Jul–24 Nov 2026 (120 days, 177 coins), live rules (2% drop, stop 2% above the peak). Full table:
+[backtest/results.md](../backtest/results.md).
+
+| Rules | Trades | Total R | Worst run | 1st / 2nd half |
+|---|---|---|---|---|
+| Live (3 open shorts max) | 117 | +8.8 | −11.6R | +1.9 / +6.9 |
+| **Max 1 open short** | 60 | **+14.4** | **−4.2R** | +6.6 / +7.8 |
+| Max 2 open shorts | 97 | +8.5 | −11.1R | +0.1 / +8.4 |
+| Close shorts if BTC +2% in 1h | 117 | +8.8 | −11.6R | no change: never fired |
+| Close shorts if BTC +1.5% in 1h | 117 | +8.6 | −11.7R | fired twice |
+| BTC +2%: break-even if winning, else close | 117 | +8.8 | −11.6R | no change: never fired |
+
+- **Max 1 open short is the clear winner.** It gives more total R, about a third of the worst run, and gains in both
+  halves.
+  - **Robustness check:** when several coins set up in the same hour, the backtest has to pick one. I reran it with
+    three different picking orders. Max 1 still won every time:
+    - total +14.4 / +13.3 / +10.0R, against +8.8 / +8.4 / +9.2R for the live rules;
+    - worst run −4.2 / −2.6 / −5.2R, against −11.6 / −13.2 / −12.3R.
+  - **Why it helps:** when several alts set up together, it's usually one broad alt or BTC move, and the extra shorts
+    tend to lose together, as on 22–23 Nov.
+- **Max 2 is no better than 3** (+8.5R, and down to +3.1R in one ordering).
+- **A BTC-spike exit can't be judged on hourly candles.** BTC rose 2%+ within an hour only 12 times in 128 days. When
+  the spike and the coin's stop fall in the same hour, the backtest counts the stop first, so the exit almost never
+  fires. Testing it properly would need 5-minute data, and Hyperliquid only gives about 17 days of that. Leave it.
+- **Trade-off:** max 1 takes about half as many trades. At 10% risk per trade, the extra R comes from skipping the
+  shorts that lose together, not from more trades.
+- **Caveat:** the backtest uses hourly candles, while the live bot scans every 5 minutes. It didn't take the live
+  ETHFI, JTO or NEAR trades on 22 Nov (its BTC check, on hourly closes, blocked them), so it can't replay that exact
+  day.
+
+**Recommendation:** set `MAX_OPEN_SHORTS = 1`. Paul to decide; not changed yet.
+
 ## Weekly review — 14 Nov 2026 (6–14 Nov)
 
 **Paul's concern:** the 3% rolled-over rule is stopping almost every trade. **The data agrees.**
